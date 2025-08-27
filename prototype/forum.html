@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论坛交流 - 家教接单平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0052d9 0%, #0040a3 100%);
+        }
+        .post-card {
+            transition: all 0.3s ease;
+        }
+        .post-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .verified-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+        .fab-button {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #0052d9;
+            box-shadow: 0 4px 12px rgba(0, 82, 217, 0.4);
+            transition: all 0.3s ease;
+        }
+        .fab-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 82, 217, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+    <!-- 状态栏 -->
+    <div class="gradient-bg h-12 flex items-center justify-between px-4">
+        <div class="text-white text-sm font-medium">9:41</div>
+        <div class="flex items-center space-x-1">
+            <div class="w-4 h-2 bg-white rounded-sm opacity-60"></div>
+            <div class="w-4 h-2 bg-white rounded-sm opacity-80"></div>
+            <div class="w-4 h-2 bg-white rounded-sm"></div>
+            <div class="w-6 h-3 border border-white rounded-sm">
+                <div class="w-4 h-2 bg-white rounded-sm ml-0.5 mt-0.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="gradient-bg px-4 pb-4">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-white text-lg font-semibold">论坛交流</h1>
+            <div class="flex items-center space-x-3">
+                <button class="text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+                <button class="text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 分类标签 -->
+        <div class="flex space-x-2 overflow-x-auto">
+            <button class="bg-white text-blue-600 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">全部</button>
+            <button class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">经验分享</button>
+            <button class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">求助问答</button>
+            <button class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">资源分享</button>
+            <button class="bg-white bg-opacity-20 text-white px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">闲聊</button>
+        </div>
+    </div>
+
+    <!-- 帖子列表 -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="p-4 space-y-4">
+            <!-- 置顶帖子 -->
+            <div class="post-card bg-white rounded-xl p-4 shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        管
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-semibold text-gray-800">管理员</span>
+                            <span class="verified-badge text-white text-xs px-2 py-0.5 rounded-full font-medium">官方</span>
+                            <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-medium">置顶</span>
+                            <span class="text-gray-400 text-sm">3天前</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-2">【公告】论坛使用规范和注意事项</h3>
+                        <p class="text-gray-600 text-sm mb-3">欢迎大家来到家教交流论坛！为了营造良好的交流环境，请大家遵守以下规范...</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    25
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    128
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 普通帖子1 -->
+            <div class="post-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        李
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-semibold text-gray-800">李老师</span>
+                            <span class="verified-badge text-white text-xs px-2 py-0.5 rounded-full font-medium">认证</span>
+                            <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full font-medium">经验分享</span>
+                            <span class="text-gray-400 text-sm">2小时前</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-2">如何提高学生的数学学习兴趣？</h3>
+                        <p class="text-gray-600 text-sm mb-3">做了两年家教，发现很多学生对数学缺乏兴趣。分享几个我常用的方法：1. 从生活实例入手 2. 游戏化教学 3. 及时鼓励...</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    12
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    35
+                                </span>
+                            </div>
+                            <button class="text-blue-600 text-sm font-medium">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 普通帖子2 -->
+            <div class="post-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        王
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-semibold text-gray-800">王同学</span>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium">新手</span>
+                            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full font-medium">求助问答</span>
+                            <span class="text-gray-400 text-sm">4小时前</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-2">第一次做家教，有什么需要注意的吗？</h3>
+                        <p class="text-gray-600 text-sm mb-3">刚刚通过认证，准备接第一单。有点紧张，想问问各位老师有什么经验可以分享吗？特别是第一次见面应该怎么准备...</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    8
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    15
+                                </span>
+                            </div>
+                            <button class="text-blue-600 text-sm font-medium">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 普通帖子3 -->
+            <div class="post-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        陈
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-semibold text-gray-800">陈老师</span>
+                            <span class="verified-badge text-white text-xs px-2 py-0.5 rounded-full font-medium">认证</span>
+                            <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full font-medium">资源分享</span>
+                            <span class="text-gray-400 text-sm">1天前</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-2">分享一些高中物理实验视频资源</h3>
+                        <p class="text-gray-600 text-sm mb-3">整理了一些高质量的物理实验视频，对于讲解抽象概念很有帮助。包括力学、电学、光学等各个部分...</p>
+                        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
+                                </svg>
+                                <span class="text-sm text-gray-700">物理实验视频合集.zip</span>
+                                <span class="text-xs text-gray-500">125MB</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    6
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    42
+                                </span>
+                            </div>
+                            <button class="text-blue-600 text-sm font-medium">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 匿名帖子 -->
+            <div class="post-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        匿
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-semibold text-gray-800">匿名用户</span>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium">匿名</span>
+                            <span class="bg-purple-100 text-purple-600 text-xs px-2 py-0.5 rounded-full font-medium">闲聊</span>
+                            <span class="text-gray-400 text-sm">2天前</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-2">家教这个行业的发展前景怎么样？</h3>
+                        <p class="text-gray-600 text-sm mb-3">最近在考虑是否要长期从事家教工作，想听听大家的看法。现在线上教育这么发达，传统家教还有优势吗？</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    18
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    23
+                                </span>
+                            </div>
+                            <button class="text-blue-600 text-sm font-medium">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发帖按钮 -->
+    <button class="fab-button flex items-center justify-center text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+    </button>
+
+    <!-- 底部导航 -->
+    <div class="bg-white border-t border-gray-100 px-4 py-2">
+        <div class="flex justify-around">
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                </svg>
+                <span class="text-xs">订单</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-xs">简历</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-blue-600">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                </svg>
+                <span class="text-xs">论坛</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-xs">我的</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部安全区 -->
+    <div class="h-8 bg-white"></div>
+</body>
+</html>

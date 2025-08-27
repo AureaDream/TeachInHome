@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员后台 - 家教接单平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0052d9 0%, #0040a3 100%);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .menu-item {
+            transition: all 0.2s ease;
+        }
+        .menu-item:hover {
+            background-color: #f1f5f9;
+        }
+        .tab-active {
+            background: #0052d9;
+            color: white;
+        }
+        .tab-inactive {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+    <!-- 状态栏 -->
+    <div class="gradient-bg h-12 flex items-center justify-between px-4">
+        <div class="text-white text-sm font-medium">9:41</div>
+        <div class="flex items-center space-x-1">
+            <div class="w-4 h-2 bg-white rounded-sm opacity-60"></div>
+            <div class="w-4 h-2 bg-white rounded-sm opacity-80"></div>
+            <div class="w-4 h-2 bg-white rounded-sm"></div>
+            <div class="w-6 h-3 border border-white rounded-sm">
+                <div class="w-4 h-2 bg-white rounded-sm ml-0.5 mt-0.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理员头部 -->
+    <div class="gradient-bg px-4 pb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-white text-lg font-semibold">管理员后台</h1>
+            <div class="flex items-center space-x-3">
+                <button class="text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-2H4v2zM4 15h8v-2H4v2zM4 11h10V9H4v2zM4 7h12V5H4v2z"></path>
+                    </svg>
+                </button>
+                <button class="text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 管理员信息 -->
+        <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    管
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <h2 class="text-white text-lg font-semibold">系统管理员</h2>
+                        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">超级管理员</span>
+                    </div>
+                    <p class="text-white text-opacity-80 text-sm">最后登录：2024-01-15 09:30</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据统计 -->
+    <div class="px-4 -mt-3 mb-4">
+        <div class="grid grid-cols-2 gap-3">
+            <div class="stats-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-2xl font-bold text-blue-600">1,248</div>
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-gray-600 text-sm">注册用户</div>
+                <div class="text-green-600 text-xs mt-1">+12% 本月</div>
+            </div>
+            <div class="stats-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-2xl font-bold text-green-600">856</div>
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-gray-600 text-sm">认证教师</div>
+                <div class="text-green-600 text-xs mt-1">+8% 本月</div>
+            </div>
+            <div class="stats-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-2xl font-bold text-orange-600">2,156</div>
+                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h6a2 2 0 002-2V3a2 2 0 012 2v6h-3a2 2 0 00-2 2v3H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-gray-600 text-sm">总订单数</div>
+                <div class="text-green-600 text-xs mt-1">+25% 本月</div>
+            </div>
+            <div class="stats-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-2xl font-bold text-purple-600">¥128k</div>
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-gray-600 text-sm">平台收入</div>
+                <div class="text-green-600 text-xs mt-1">+18% 本月</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 标签页 -->
+    <div class="px-4 mb-4">
+        <div class="flex bg-gray-100 rounded-xl p-1">
+            <button class="flex-1 tab-active py-2 px-4 rounded-lg text-sm font-medium transition-all">用户管理</button>
+            <button class="flex-1 tab-inactive py-2 px-4 rounded-lg text-sm font-medium transition-all">订单管理</button>
+            <button class="flex-1 tab-inactive py-2 px-4 rounded-lg text-sm font-medium transition-all">系统设置</button>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="px-4 space-y-4">
+            <!-- 用户管理功能 -->
+            <div class="bg-white rounded-xl shadow-sm">
+                <div class="p-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-800">用户管理</h3>
+                        <button class="text-blue-600 text-sm font-medium">查看全部</button>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">用户列表</div>
+                                <div class="text-sm text-gray-500">查看和管理所有用户</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">1248</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">认证审核</div>
+                                <div class="text-sm text-gray-500">审核教师认证申请</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">15</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">违规处理</div>
+                                <div class="text-sm text-gray-500">处理用户举报和违规</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">3</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单管理 -->
+            <div class="bg-white rounded-xl shadow-sm">
+                <div class="p-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-800">订单管理</h3>
+                        <button class="text-blue-600 text-sm font-medium">查看全部</button>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h6a2 2 0 002-2V3a2 2 0 012 2v6h-3a2 2 0 00-2 2v3H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">订单列表</div>
+                                <div class="text-sm text-gray-500">查看所有订单状态</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded-full">2156</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">争议处理</div>
+                                <div class="text-sm text-gray-500">处理订单争议和投诉</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">5</span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">财务管理</div>
+                                <div class="text-sm text-gray-500">管理平台收入和提现</div>
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统管理 -->
+            <div class="bg-white rounded-xl shadow-sm">
+                <div class="p-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-800">系统管理</h3>
+                </div>
+                <div class="p-2">
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">数据统计</div>
+                                <div class="text-sm text-gray-500">查看平台运营数据</div>
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">系统设置</div>
+                                <div class="text-sm text-gray-500">配置系统参数</div>
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bg-white border-t border-gray-100 px-4 py-2">
+        <div class="flex justify-around">
+            <button class="flex flex-col items-center py-2 text-blue-600">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                </svg>
+                <span class="text-xs">管理</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                </svg>
+                <span class="text-xs">统计</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-xs">帮助</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-xs">设置</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部安全区 -->
+    <div class="h-8 bg-white"></div>
+</body>
+</html>

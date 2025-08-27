@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历生成 - 家教接单平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0052d9 0%, #0040a3 100%);
+        }
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        .step-indicator.active {
+            background: #0052d9;
+            color: white;
+        }
+        .step-indicator.completed {
+            background: #10b981;
+            color: white;
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
+        .input-focus:focus {
+            border-color: #0052d9;
+            box-shadow: 0 0 0 3px rgba(0, 82, 217, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+    <!-- 状态栏 -->
+    <div class="gradient-bg h-12 flex items-center justify-between px-4">
+        <div class="text-white text-sm font-medium">9:41</div>
+        <div class="flex items-center space-x-1">
+            <div class="w-4 h-2 bg-white rounded-sm opacity-60"></div>
+            <div class="w-4 h-2 bg-white rounded-sm opacity-80"></div>
+            <div class="w-4 h-2 bg-white rounded-sm"></div>
+            <div class="w-6 h-3 border border-white rounded-sm">
+                <div class="w-4 h-2 bg-white rounded-sm ml-0.5 mt-0.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="gradient-bg px-4 pb-4">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+                <button class="text-white mr-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h1 class="text-white text-lg font-semibold">简历生成</h1>
+            </div>
+            <button class="text-white text-sm">预览</button>
+        </div>
+        
+        <!-- 步骤指示器 -->
+        <div class="flex items-center justify-between">
+            <div class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">1</div>
+            <div class="flex-1 h-0.5 bg-white bg-opacity-30 mx-2"></div>
+            <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-white bg-opacity-30">2</div>
+            <div class="flex-1 h-0.5 bg-white bg-opacity-30 mx-2"></div>
+            <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-white bg-opacity-30">3</div>
+        </div>
+        
+        <div class="flex justify-between mt-2 text-xs text-white text-opacity-80">
+            <span>基本信息</span>
+            <span>教学能力</span>
+            <span>个人经验</span>
+        </div>
+    </div>
+
+    <!-- 表单内容 -->
+    <div class="flex-1 overflow-y-auto">
+        <!-- 第一步：基本信息 -->
+        <div class="form-section active p-4">
+            <div class="bg-white rounded-xl p-4 mb-4">
+                <h3 class="font-semibold text-gray-800 mb-4">基本信息</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">姓名 *</label>
+                        <input type="text" placeholder="请输入您的姓名" 
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">性别 *</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="male" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">男</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="female" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">女</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">学校 *</label>
+                        <input type="text" placeholder="请输入您的学校名称" 
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">专业 *</label>
+                        <input type="text" placeholder="请输入您的专业" 
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">年级</label>
+                        <select class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                            <option value="">请选择年级</option>
+                            <option value="大一">大一</option>
+                            <option value="大二">大二</option>
+                            <option value="大三">大三</option>
+                            <option value="大四">大四</option>
+                            <option value="研一">研一</option>
+                            <option value="研二">研二</option>
+                            <option value="研三">研三</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">户籍所在地</label>
+                        <input type="text" placeholder="请输入户籍所在地" 
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 第二步：教学能力 -->
+        <div class="form-section p-4">
+            <div class="bg-white rounded-xl p-4 mb-4">
+                <h3 class="font-semibold text-gray-800 mb-4">教学能力</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">擅长科目 *</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">数学</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">英语</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">物理</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">化学</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">生物</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">语文</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">可教授年级</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">小学</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">初中</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">高中</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">成人</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">相关证书</label>
+                        <textarea placeholder="请输入您拥有的相关证书，如英语四六级、教师资格证等" 
+                                  class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none h-24 resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">期望时薪范围</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" placeholder="最低时薪" 
+                                   class="px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                            <input type="number" placeholder="最高时薪" 
+                                   class="px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 第三步：个人经验 -->
+        <div class="form-section p-4">
+            <div class="bg-white rounded-xl p-4 mb-4">
+                <h3 class="font-semibold text-gray-800 mb-4">个人经验</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">家教经验</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="experience" value="none" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">无经验</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="experience" value="beginner" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">1年以下</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="experience" value="intermediate" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">1-3年</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="experience" value="experienced" class="mr-2 text-blue-600">
+                                <span class="text-gray-700">3年以上</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">教学特色</label>
+                        <textarea placeholder="请描述您的教学特色和优势，如教学方法、沟通能力等" 
+                                  class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none h-24 resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功案例</label>
+                        <textarea placeholder="请分享您的成功教学案例，如学生成绩提升情况等" 
+                                  class="w-full px-4 py-3 border border-gray-200 rounded-xl input-focus outline-none h-24 resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">可授课时间</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">周一至周五</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">周末</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">晚上</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" class="mr-2 text-blue-600">
+                                <span class="text-sm">寒暑假</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 简历预览 -->
+            <div class="bg-blue-50 rounded-xl p-4 mb-4">
+                <h3 class="font-semibold text-blue-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z"></path>
+                        <path d="M6 8h8v2H6V8zm0 4h4v2H6v-2z"></path>
+                    </svg>
+                    简历预览
+                </h3>
+                <div class="bg-white rounded-lg p-4 text-sm">
+                    <div class="border-b border-gray-200 pb-3 mb-3">
+                        <h4 class="font-semibold text-gray-800">张同学</h4>
+                        <p class="text-gray-600">福建师范大学 · 数学与应用数学专业 · 大三</p>
+                    </div>
+                    <div class="space-y-2 text-gray-700">
+                        <p><span class="font-medium">擅长科目：</span>数学、物理</p>
+                        <p><span class="font-medium">可教年级：</span>初中、高中</p>
+                        <p><span class="font-medium">期望时薪：</span>80-120元/小时</p>
+                        <p><span class="font-medium">教学经验：</span>1-3年</p>
+                        <p><span class="font-medium">教学特色：</span>善于引导学生思考，注重基础知识的巩固...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="bg-white border-t border-gray-100 px-4 py-3">
+        <div class="flex space-x-3">
+            <button class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-medium">
+                上一步
+            </button>
+            <button class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium">
+                下一步
+            </button>
+        </div>
+    </div>
+
+    <!-- 底部安全区 -->
+    <div class="h-8 bg-white"></div>
+</body>
+</html>
