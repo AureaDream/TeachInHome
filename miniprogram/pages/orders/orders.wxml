@@ -1,0 +1,196 @@
+<view class="orders-container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <t-search
+      placeholder="搜索订单"
+      value="{{searchValue}}"
+      bind:change="onSearchChange"
+      bind:submit="onSearch"
+    />
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="filter-tabs">
+    <t-tabs value="{{activeTab}}" bind:change="onTabChange">
+      <t-tab-panel label="全部" value="all" />
+      <t-tab-panel label="小学" value="primary" />
+      <t-tab-panel label="初中" value="middle" />
+      <t-tab-panel label="高中" value="high" />
+      <t-tab-panel label="大学" value="university" />
+    </t-tabs>
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-bar">
+    <view class="filter-item" bind:tap="onShowSubjectFilter">
+      <t-icon name="filter" size="32rpx" />
+      <text>学科</text>
+      <text class="filter-value" wx:if="{{selectedSubject}}">{{selectedSubject}}</text>
+    </view>
+    
+    <view class="filter-item" bind:tap="onShowDistanceFilter">
+      <t-icon name="location" size="32rpx" />
+      <text>距离</text>
+      <text class="filter-value" wx:if="{{selectedDistance}}">{{selectedDistance}}</text>
+    </view>
+    
+    <view class="filter-item" bind:tap="onShowSalaryFilter">
+      <t-icon name="money" size="32rpx" />
+      <text>报酬</text>
+      <text class="filter-value" wx:if="{{selectedSalary}}">{{selectedSalary}}</text>
+    </view>
+    
+    <view class="filter-item" bind:tap="onResetFilter">
+      <t-icon name="refresh" size="32rpx" />
+      <text>重置</text>
+    </view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view class="orders-list">
+    <view wx:if="{{loading}}" class="loading">
+      <t-loading theme="circular" size="60rpx" />
+      <text>加载中...</text>
+    </view>
+    
+    <view wx:elif="{{orders.length === 0}}" class="empty">
+      <t-empty icon="order" description="暂无订单" />
+    </view>
+    
+    <view wx:else>
+      <view 
+        class="order-card" 
+        wx:for="{{orders}}" 
+        wx:key="id"
+        bind:tap="onOrderTap"
+        data-order="{{item}}"
+      >
+        <!-- 订单头部 -->
+        <view class="order-header">
+          <view class="order-info">
+            <view class="order-title">{{item.subject}} - {{item.grade}}</view>
+            <view class="order-time">{{item.publishTime}}</view>
+          </view>
+          <view class="order-status">
+            <t-tag 
+              theme="{{item.status === 'available' ? 'success' : 'warning'}}"
+              variant="light"
+            >
+              {{item.statusText}}
+            </t-tag>
+          </view>
+        </view>
+
+        <!-- 订单内容 -->
+        <view class="order-content">
+          <view class="content-row">
+            <t-icon name="location" size="28rpx" color="#666" />
+            <text class="content-text">{{item.location}}</text>
+            <text class="distance">距离{{item.distance}}</text>
+          </view>
+          
+          <view class="content-row">
+            <t-icon name="time" size="28rpx" color="#666" />
+            <text class="content-text">{{item.timeRequirement}}</text>
+          </view>
+          
+          <view class="content-row">
+            <t-icon name="user" size="28rpx" color="#666" />
+            <text class="content-text">{{item.studentInfo}}</text>
+          </view>
+          
+          <view class="content-row" wx:if="{{item.requirements}}">
+            <t-icon name="bulletpoint" size="28rpx" color="#666" />
+            <text class="content-text">{{item.requirements}}</text>
+          </view>
+        </view>
+
+        <!-- 订单底部 -->
+        <view class="order-footer">
+          <view class="salary">
+            <text class="salary-amount">¥{{item.salary}}</text>
+            <text class="salary-unit">/{{item.salaryUnit}}</text>
+          </view>
+          
+          <view class="order-actions">
+            <t-button 
+              size="small" 
+              theme="outline" 
+              bind:tap="onCollectOrder"
+              data-id="{{item.id}}"
+              catch:tap="true"
+            >
+              {{item.collected ? '已收藏' : '收藏'}}
+            </t-button>
+            
+            <t-button 
+              size="small" 
+              theme="primary" 
+              bind:tap="onTakeOrder"
+              data-id="{{item.id}}"
+              catch:tap="true"
+            >
+              立即接单
+            </t-button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}">
+    <t-button theme="outline" bind:tap="onLoadMore">加载更多</t-button>
+  </view>
+</view>
+
+<!-- 学科筛选弹窗 -->
+<t-dialog
+  visible="{{showSubjectDialog}}"
+  title="选择学科"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onConfirmSubject"
+  bind:cancel="onCancelSubject"
+>
+  <view class="subject-list">
+    <t-radio-group value="{{tempSubject}}" bind:change="onSubjectChange">
+      <t-radio wx:for="{{subjects}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
+    </t-radio-group>
+  </view>
+</t-dialog>
+
+<!-- 距离筛选弹窗 -->
+<t-dialog
+  visible="{{showDistanceDialog}}"
+  title="选择距离"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onConfirmDistance"
+  bind:cancel="onCancelDistance"
+>
+  <view class="distance-list">
+    <t-radio-group value="{{tempDistance}}" bind:change="onDistanceChange">
+      <t-radio wx:for="{{distances}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
+    </t-radio-group>
+  </view>
+</t-dialog>
+
+<!-- 报酬筛选弹窗 -->
+<t-dialog
+  visible="{{showSalaryDialog}}"
+  title="选择报酬"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onConfirmSalary"
+  bind:cancel="onCancelSalary"
+>
+  <view class="salary-list">
+    <t-radio-group value="{{tempSalary}}" bind:change="onSalaryChange">
+      <t-radio wx:for="{{salaryRanges}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
+    </t-radio-group>
+  </view>
+</t-dialog>
+
+<!-- Toast提示 -->
+<t-toast id="t-toast" />

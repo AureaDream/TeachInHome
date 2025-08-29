@@ -1,0 +1,331 @@
+.forum-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+/* 搜索栏 */
+.search-bar {
+  padding: 20rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* 分类标签 */
+.category-tabs {
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* 发帖按钮 */
+.post-button {
+  padding: 20rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* 帖子列表 */
+.post-list {
+  flex: 1;
+  overflow: hidden;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400rpx;
+}
+
+.posts-container {
+  padding-bottom: 40rpx;
+}
+
+/* 帖子项 */
+.post-item {
+  background: #fff;
+  margin: 20rpx;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+/* 帖子头部 */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.username {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.post-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.category-tag {
+  margin-left: 20rpx;
+}
+
+/* 帖子内容 */
+.post-content {
+  margin-bottom: 24rpx;
+}
+
+.post-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 12rpx;
+}
+
+.post-summary {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+/* 图片预览 */
+.post-images {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.post-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 帖子统计 */
+.post-stats {
+  display: flex;
+  gap: 40rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.stat-text.liked {
+  color: #0052d9;
+}
+
+/* 操作按钮 */
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.post-actions .t-button {
+  flex: 1;
+  margin: 0 10rpx;
+}
+
+.post-actions .t-button.liked {
+  color: #0052d9;
+}
+
+/* 空状态 */
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400rpx;
+}
+
+/* 加载更多 */
+.load-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100rpx;
+}
+
+.load-more-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.no-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80rpx;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: #ccc;
+}
+
+/* 发帖弹窗 */
+.create-form {
+  padding: 20rpx 0;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: bold;
+}
+
+/* 图片上传 */
+.image-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.upload-image {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.upload-image image {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 32rpx;
+  height: 32rpx;
+  background: #ff4757;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-btn {
+  width: 120rpx;
+  height: 120rpx;
+  border: 2rpx dashed #ddd;
+  border-radius: 8rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.upload-text {
+  font-size: 20rpx;
+  color: #999;
+}
+
+/* TDesign组件样式覆盖 */
+.t-search {
+  background: #f8f8f8;
+  border-radius: 24rpx;
+}
+
+.t-tabs__nav {
+  background: #fff;
+}
+
+.t-tab {
+  font-size: 28rpx;
+}
+
+.t-button {
+  border-radius: 8rpx;
+}
+
+.t-tag {
+  border-radius: 12rpx;
+}
+
+.t-input,
+.t-textarea {
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  border: none;
+}
+
+.t-cell {
+  padding: 20rpx 0;
+}
+
+.t-dialog__content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* 响应式适配 */
+@media (max-width: 750rpx) {
+  .post-item {
+    margin: 10rpx;
+    padding: 20rpx;
+  }
+  
+  .post-images {
+    gap: 8rpx;
+  }
+  
+  .post-image {
+    width: 100rpx;
+    height: 100rpx;
+  }
+  
+  .post-stats {
+    gap: 30rpx;
+  }
+  
+  .post-actions .t-button {
+    margin: 0 5rpx;
+  }
+}

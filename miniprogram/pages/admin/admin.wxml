@@ -1,0 +1,351 @@
+<!-- 管理员后台页面 -->
+<view class="admin-container">
+  <!-- 顶部标签页 -->
+  <t-tabs value="{{activeTab}}" bind:change="onTabChange" t-class="custom-tabs">
+    <t-tab-panel label="用户管理" value="users" />
+    <t-tab-panel label="订单管理" value="orders" />
+    <t-tab-panel label="论坛管理" value="forum" />
+    <t-tab-panel label="系统设置" value="settings" />
+  </t-tabs>
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <t-search
+      value="{{searchValue}}"
+      placeholder="{{getSearchPlaceholder()}}"
+      bind:change="onSearchChange"
+      bind:clear="onSearchClear"
+      bind:submit="onSearchSubmit"
+    />
+  </view>
+
+  <!-- 用户管理 -->
+  <block wx:if="{{activeTab === 'users'}}">
+    <!-- 用户筛选 -->
+    <view class="filter-bar">
+      <t-dropdown-menu>
+        <t-dropdown-item
+          options="{{userStatusOptions}}"
+          value="{{userStatusValue}}"
+          bind:change="onUserStatusChange"
+        />
+        <t-dropdown-item
+          options="{{userRoleOptions}}"
+          value="{{userRoleValue}}"
+          bind:change="onUserRoleChange"
+        />
+      </t-dropdown-menu>
+    </view>
+
+    <!-- 用户列表 -->
+    <view class="list-container">
+      <t-loading theme="circular" size="40rpx" class="loading-center" wx:if="{{loading}}" />
+      
+      <block wx:if="{{!loading && userList.length > 0}}">
+        <view class="user-list">
+          <view class="user-item" wx:for="{{userList}}" wx:key="userId" bind:tap="onUserDetail" data-id="{{item.userId}}">
+            <view class="user-avatar-container">
+              <image class="user-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view class="user-role {{item.role === 'admin' ? 'admin-role' : 'user-role'}}">
+                {{item.role === 'admin' ? '管理员' : '用户'}}
+              </view>
+            </view>
+            <view class="user-info">
+              <view class="user-name-row">
+                <text class="user-name">{{item.nickName}}</text>
+                <t-tag theme="{{item.status === 'active' ? 'success' : 'danger'}}" variant="light" size="small">
+                  {{item.status === 'active' ? '正常' : '禁用'}}
+                </t-tag>
+              </view>
+              <view class="user-id">ID: {{item.userId}}</view>
+              <view class="user-stats">
+                <text class="stat-item">订单: {{item.orderCount}}</text>
+                <text class="stat-item">帖子: {{item.postCount}}</text>
+                <text class="stat-item">注册: {{item.registerTime}}</text>
+              </view>
+            </view>
+            <view class="user-actions">
+              <t-icon name="edit-1" size="44rpx" color="#0052d9" bind:tap="onEditUser" data-id="{{item.userId}}" />
+              <t-icon 
+                name="{{item.status === 'active' ? 'close-circle' : 'check-circle'}}" 
+                size="44rpx" 
+                color="{{item.status === 'active' ? '#ff4d4f' : '#00a870'}}" 
+                bind:tap="onToggleUserStatus" 
+                data-id="{{item.userId}}" 
+                data-status="{{item.status}}"
+              />
+            </view>
+          </view>
+        </view>
+        
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{hasMoreUsers}}">
+          <t-loading theme="circular" size="40rpx" />
+          <text class="load-more-text">加载中...</text>
+        </view>
+      </block>
+      
+      <!-- 空状态 -->
+      <t-empty wx:if="{{!loading && userList.length === 0}}" description="暂无用户数据" />
+    </view>
+  </block>
+
+  <!-- 订单管理 -->
+  <block wx:if="{{activeTab === 'orders'}}">
+    <!-- 订单筛选 -->
+    <view class="filter-bar">
+      <t-dropdown-menu>
+        <t-dropdown-item
+          options="{{orderStatusOptions}}"
+          value="{{orderStatusValue}}"
+          bind:change="onOrderStatusChange"
+        />
+        <t-dropdown-item
+          options="{{orderSubjectOptions}}"
+          value="{{orderSubjectValue}}"
+          bind:change="onOrderSubjectChange"
+        />
+      </t-dropdown-menu>
+    </view>
+
+    <!-- 订单列表 -->
+    <view class="list-container">
+      <t-loading theme="circular" size="40rpx" class="loading-center" wx:if="{{loading}}" />
+      
+      <block wx:if="{{!loading && orderList.length > 0}}">
+        <view class="order-list">
+          <view class="order-item" wx:for="{{orderList}}" wx:key="orderId" bind:tap="onOrderDetail" data-id="{{item.orderId}}">
+            <view class="order-header">
+              <view class="order-id">订单号: {{item.orderId}}</view>
+              <t-tag theme="{{getOrderStatusTheme(item.status)}}" variant="light" size="small">
+                {{getOrderStatusText(item.status)}}
+              </t-tag>
+            </view>
+            <view class="order-content">
+              <view class="order-subject">
+                <t-tag theme="primary" variant="light">{{item.subject}}</t-tag>
+                <text class="education-stage">{{item.educationStage}}</text>
+              </view>
+              <view class="order-price">¥{{item.price}}/小时</view>
+            </view>
+            <view class="order-footer">
+              <view class="order-publisher">发布者: {{item.publisherName}}</view>
+              <view class="order-time">{{item.createTime}}</view>
+            </view>
+            <view class="order-actions">
+              <t-icon name="edit-1" size="44rpx" color="#0052d9" bind:tap="onEditOrder" data-id="{{item.orderId}}" />
+              <t-icon name="close-circle" size="44rpx" color="#ff4d4f" bind:tap="onDeleteOrder" data-id="{{item.orderId}}" />
+            </view>
+          </view>
+        </view>
+        
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{hasMoreOrders}}">
+          <t-loading theme="circular" size="40rpx" />
+          <text class="load-more-text">加载中...</text>
+        </view>
+      </block>
+      
+      <!-- 空状态 -->
+      <t-empty wx:if="{{!loading && orderList.length === 0}}" description="暂无订单数据" />
+    </view>
+  </block>
+
+  <!-- 论坛管理 -->
+  <block wx:if="{{activeTab === 'forum'}}">
+    <!-- 帖子筛选 -->
+    <view class="filter-bar">
+      <t-dropdown-menu>
+        <t-dropdown-item
+          options="{{postStatusOptions}}"
+          value="{{postStatusValue}}"
+          bind:change="onPostStatusChange"
+        />
+        <t-dropdown-item
+          options="{{postCategoryOptions}}"
+          value="{{postCategoryValue}}"
+          bind:change="onPostCategoryChange"
+        />
+      </t-dropdown-menu>
+    </view>
+
+    <!-- 帖子列表 -->
+    <view class="list-container">
+      <t-loading theme="circular" size="40rpx" class="loading-center" wx:if="{{loading}}" />
+      
+      <block wx:if="{{!loading && postList.length > 0}}">
+        <view class="post-list">
+          <view class="post-item" wx:for="{{postList}}" wx:key="postId" bind:tap="onPostDetail" data-id="{{item.postId}}">
+            <view class="post-header">
+              <view class="post-title">{{item.title}}</view>
+              <t-tag theme="{{item.status === 'normal' ? 'success' : 'danger'}}" variant="light" size="small">
+                {{item.status === 'normal' ? '正常' : '已屏蔽'}}
+              </t-tag>
+            </view>
+            <view class="post-content">{{item.content}}</view>
+            <view class="post-footer">
+              <view class="post-author">作者: {{item.authorName}}</view>
+              <view class="post-stats">
+                <text class="stat-item">浏览: {{item.viewCount}}</text>
+                <text class="stat-item">评论: {{item.commentCount}}</text>
+                <text class="stat-item">点赞: {{item.likeCount}}</text>
+              </view>
+              <view class="post-time">{{item.createTime}}</view>
+            </view>
+            <view class="post-actions">
+              <t-icon 
+                name="{{item.status === 'normal' ? 'close-circle' : 'check-circle'}}" 
+                size="44rpx" 
+                color="{{item.status === 'normal' ? '#ff4d4f' : '#00a870'}}" 
+                bind:tap="onTogglePostStatus" 
+                data-id="{{item.postId}}" 
+                data-status="{{item.status}}"
+              />
+              <t-icon name="delete" size="44rpx" color="#ff4d4f" bind:tap="onDeletePost" data-id="{{item.postId}}" />
+            </view>
+          </view>
+        </view>
+        
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{hasMorePosts}}">
+          <t-loading theme="circular" size="40rpx" />
+          <text class="load-more-text">加载中...</text>
+        </view>
+      </block>
+      
+      <!-- 空状态 -->
+      <t-empty wx:if="{{!loading && postList.length === 0}}" description="暂无帖子数据" />
+    </view>
+  </block>
+
+  <!-- 系统设置 -->
+  <block wx:if="{{activeTab === 'settings'}}">
+    <view class="settings-container">
+      <!-- 系统信息 -->
+      <t-cell-group title="系统信息">
+        <t-cell title="当前版本" note="1.0.0" hover />
+        <t-cell title="用户总数" note="{{statistics.userCount}}" hover />
+        <t-cell title="订单总数" note="{{statistics.orderCount}}" hover />
+        <t-cell title="帖子总数" note="{{statistics.postCount}}" hover />
+      </t-cell-group>
+      
+      <!-- 功能设置 -->
+      <t-cell-group title="功能设置">
+        <t-cell title="开启用户注册" hover>
+          <t-switch value="{{settings.enableRegister}}" bind:change="onSettingChange" data-key="enableRegister" slot="note" />
+        </t-cell>
+        <t-cell title="开启订单发布" hover>
+          <t-switch value="{{settings.enableOrderPublish}}" bind:change="onSettingChange" data-key="enableOrderPublish" slot="note" />
+        </t-cell>
+        <t-cell title="开启论坛发帖" hover>
+          <t-switch value="{{settings.enablePostPublish}}" bind:change="onSettingChange" data-key="enablePostPublish" slot="note" />
+        </t-cell>
+        <t-cell title="开启简历生成" hover>
+          <t-switch value="{{settings.enableResumeGenerate}}" bind:change="onSettingChange" data-key="enableResumeGenerate" slot="note" />
+        </t-cell>
+      </t-cell-group>
+      
+      <!-- 管理员设置 -->
+      <t-cell-group title="管理员设置">
+        <t-cell title="添加管理员" leftIcon="user-add" hover arrow bind:tap="onAddAdmin" />
+        <t-cell title="修改密码" leftIcon="lock" hover arrow bind:tap="onChangePassword" />
+        <t-cell title="退出登录" leftIcon="logout" hover arrow bind:tap="onLogout" />
+      </t-cell-group>
+      
+      <!-- 数据管理 -->
+      <t-cell-group title="数据管理">
+        <t-cell title="数据备份" leftIcon="download" hover arrow bind:tap="onBackupData" />
+        <t-cell title="数据恢复" leftIcon="upload" hover arrow bind:tap="onRestoreData" />
+        <t-cell title="清除缓存" leftIcon="clear" hover arrow bind:tap="onClearCache" />
+      </t-cell-group>
+    </view>
+  </block>
+
+  <!-- 用户编辑弹窗 -->
+  <t-dialog
+    visible="{{showUserEditDialog}}"
+    title="编辑用户"
+    confirm-btn="保存"
+    cancel-btn="取消"
+    bind:confirm="onConfirmUserEdit"
+    bind:cancel="onCancelUserEdit"
+  >
+    <view class="dialog-content">
+      <t-input label="昵称" placeholder="请输入昵称" value="{{editUserForm.nickName}}" bind:change="onEditUserFormChange" data-field="nickName" />
+      <t-input label="手机号" placeholder="请输入手机号" value="{{editUserForm.phone}}" bind:change="onEditUserFormChange" data-field="phone" />
+      <t-input label="邮箱" placeholder="请输入邮箱" value="{{editUserForm.email}}" bind:change="onEditUserFormChange" data-field="email" />
+      <view class="form-item">
+        <text class="form-label">角色</text>
+        <t-radio-group value="{{editUserForm.role}}" bind:change="onEditUserRoleChange">
+          <t-radio value="user">普通用户</t-radio>
+          <t-radio value="admin">管理员</t-radio>
+        </t-radio-group>
+      </view>
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <t-radio-group value="{{editUserForm.status}}" bind:change="onEditUserStatusChange">
+          <t-radio value="active">正常</t-radio>
+          <t-radio value="disabled">禁用</t-radio>
+        </t-radio-group>
+      </view>
+    </view>
+  </t-dialog>
+
+  <!-- 订单编辑弹窗 -->
+  <t-dialog
+    visible="{{showOrderEditDialog}}"
+    title="编辑订单"
+    confirm-btn="保存"
+    cancel-btn="取消"
+    bind:confirm="onConfirmOrderEdit"
+    bind:cancel="onCancelOrderEdit"
+  >
+    <view class="dialog-content">
+      <t-input label="科目" placeholder="请输入科目" value="{{editOrderForm.subject}}" bind:change="onEditOrderFormChange" data-field="subject" />
+      <t-input label="教育阶段" placeholder="请输入教育阶段" value="{{editOrderForm.educationStage}}" bind:change="onEditOrderFormChange" data-field="educationStage" />
+      <t-input label="报酬" placeholder="请输入报酬" type="number" value="{{editOrderForm.price}}" bind:change="onEditOrderFormChange" data-field="price" />
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <t-radio-group value="{{editOrderForm.status}}" bind:change="onEditOrderStatusChange">
+          <t-radio value="pending">待接单</t-radio>
+          <t-radio value="accepted">已接单</t-radio>
+          <t-radio value="completed">已完成</t-radio>
+          <t-radio value="cancelled">已取消</t-radio>
+        </t-radio-group>
+      </view>
+    </view>
+  </t-dialog>
+
+  <!-- 添加管理员弹窗 -->
+  <t-dialog
+    visible="{{showAddAdminDialog}}"
+    title="添加管理员"
+    confirm-btn="添加"
+    cancel-btn="取消"
+    bind:confirm="onConfirmAddAdmin"
+    bind:cancel="onCancelAddAdmin"
+  >
+    <view class="dialog-content">
+      <t-input label="用户ID" placeholder="请输入用户ID" value="{{addAdminForm.userId}}" bind:change="onAddAdminFormChange" data-field="userId" />
+    </view>
+  </t-dialog>
+
+  <!-- 修改密码弹窗 -->
+  <t-dialog
+    visible="{{showChangePasswordDialog}}"
+    title="修改密码"
+    confirm-btn="确认修改"
+    cancel-btn="取消"
+    bind:confirm="onConfirmChangePassword"
+    bind:cancel="onCancelChangePassword"
+  >
+    <view class="dialog-content">
+      <t-input label="当前密码" placeholder="请输入当前密码" type="password" value="{{passwordForm.oldPassword}}" bind:change="onPasswordFormChange" data-field="oldPassword" />
+      <t-input label="新密码" placeholder="请输入新密码" type="password" value="{{passwordForm.newPassword}}" bind:change="onPasswordFormChange" data-field="newPassword" />
+      <t-input label="确认新密码" placeholder="请再次输入新密码" type="password" value="{{passwordForm.confirmPassword}}" bind:change="onPasswordFormChange" data-field="confirmPassword" />
+    </view>
+  </t-dialog>
+
+  <!-- Toast 提示 -->
+  <t-toast id="t-toast" />
+</view>

@@ -1,0 +1,242 @@
+.profile-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+/* 用户信息卡片 */
+.user-card {
+  background: linear-gradient(135deg, #0052d9, #1890ff);
+  padding: 40rpx 30rpx;
+  color: #fff;
+  margin-bottom: 20rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.5);
+  margin-right: 30rpx;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.username {
+  font-size: 36rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+.user-id {
+  font-size: 24rpx;
+  opacity: 0.8;
+  display: block;
+}
+
+.user-stats {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+/* 功能菜单 */
+.menu-section {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 120rpx;
+}
+
+/* 退出登录按钮 */
+.logout-section {
+  padding: 40rpx 30rpx;
+  background: #fff;
+}
+
+/* 编辑个人信息弹窗 */
+.edit-form {
+  padding: 20rpx 0;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: bold;
+}
+
+/* 消息通知弹窗 */
+.notification-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.empty-notification {
+  padding: 40rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.notification-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.notification-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.notification-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.notification-content {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 关于我们弹窗 */
+.about-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.about-logo {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.about-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.about-version {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+}
+
+.about-desc {
+  font-size: 26rpx;
+  color: #666;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+}
+
+.about-links {
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  font-size: 26rpx;
+  color: #0052d9;
+}
+
+.link-divider {
+  margin: 0 20rpx;
+  color: #ddd;
+}
+
+/* TDesign组件样式覆盖 */
+.t-cell-group__title {
+  font-size: 28rpx;
+  color: #999;
+  padding: 24rpx 30rpx 12rpx;
+}
+
+.t-cell {
+  padding: 24rpx 30rpx;
+}
+
+.t-cell__left-icon {
+  margin-right: 20rpx;
+}
+
+.t-input,
+.t-textarea {
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  border: none;
+}
+
+.t-dialog__content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* 响应式适配 */
+@media (max-width: 750rpx) {
+  .user-card {
+    padding: 30rpx 20rpx;
+  }
+  
+  .avatar {
+    width: 100rpx;
+    height: 100rpx;
+  }
+  
+  .username {
+    font-size: 32rpx;
+  }
+  
+  .logout-section {
+    padding: 30rpx 20rpx;
+  }
+}

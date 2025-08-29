@@ -1,0 +1,371 @@
+<view class="resume-container">
+  <!-- 顶部导航 -->
+  <view class="resume-nav">
+    <t-tabs value="{{activeTab}}" bind:change="onTabChange">
+      <t-tab-panel label="填写信息" value="form" />
+      <t-tab-panel label="预览简历" value="preview" />
+    </t-tabs>
+  </view>
+
+  <!-- 表单填写 -->
+  <view class="form-section" wx:if="{{activeTab === 'form'}}">
+    <scroll-view scroll-y class="form-scroll">
+      <!-- 基本信息 -->
+      <view class="form-group">
+        <view class="group-title">
+          <t-icon name="user" size="32rpx" />
+          <text>基本信息</text>
+        </view>
+        
+        <t-cell-group>
+          <t-cell title="姓名" required>
+            <t-input 
+              slot="note" 
+              placeholder="请输入真实姓名"
+              value="{{formData.name}}"
+              bind:change="onInputChange"
+              data-field="name"
+            />
+          </t-cell>
+          
+          <t-cell title="性别" required>
+            <t-radio-group 
+              slot="note" 
+              value="{{formData.gender}}"
+              bind:change="onGenderChange"
+            >
+              <t-radio value="male">男</t-radio>
+              <t-radio value="female">女</t-radio>
+            </t-radio-group>
+          </t-cell>
+          
+          <t-cell title="年龄" required>
+            <t-input 
+              slot="note" 
+              type="number"
+              placeholder="请输入年龄"
+              value="{{formData.age}}"
+              bind:change="onInputChange"
+              data-field="age"
+            />
+          </t-cell>
+          
+          <t-cell title="学校" required>
+            <t-input 
+              slot="note" 
+              placeholder="请输入学校名称"
+              value="{{formData.school}}"
+              bind:change="onInputChange"
+              data-field="school"
+            />
+          </t-cell>
+          
+          <t-cell title="专业" required>
+            <t-input 
+              slot="note" 
+              placeholder="请输入专业"
+              value="{{formData.major}}"
+              bind:change="onInputChange"
+              data-field="major"
+            />
+          </t-cell>
+          
+          <t-cell title="年级">
+            <t-picker 
+              slot="note"
+              value="{{formData.grade}}"
+              options="{{gradeOptions}}"
+              bind:change="onGradeChange"
+            >
+              <text>{{formData.grade || '请选择年级'}}</text>
+            </t-picker>
+          </t-cell>
+          
+          <t-cell title="户籍">
+            <t-input 
+              slot="note" 
+              placeholder="请输入户籍所在地"
+              value="{{formData.hometown}}"
+              bind:change="onInputChange"
+              data-field="hometown"
+            />
+          </t-cell>
+        </t-cell-group>
+      </view>
+
+      <!-- 教学能力 -->
+      <view class="form-group">
+        <view class="group-title">
+          <t-icon name="education" size="32rpx" />
+          <text>教学能力</text>
+        </view>
+        
+        <t-cell-group>
+          <t-cell title="擅长科目" required>
+            <view slot="note" class="subject-tags">
+              <t-tag 
+                wx:for="{{subjects}}" 
+                wx:key="*this"
+                theme="{{formData.subjects.includes(item) ? 'primary' : 'default'}}"
+                variant="{{formData.subjects.includes(item) ? 'dark' : 'light'}}"
+                bind:tap="onSubjectTap"
+                data-subject="{{item}}"
+              >
+                {{item}}
+              </t-tag>
+            </view>
+          </t-cell>
+          
+          <t-cell title="教学经验">
+            <t-picker 
+              slot="note"
+              value="{{formData.experience}}"
+              options="{{experienceOptions}}"
+              bind:change="onExperienceChange"
+            >
+              <text>{{formData.experience || '请选择经验'}}</text>
+            </t-picker>
+          </t-cell>
+          
+          <t-cell title="获得证书">
+            <t-textarea 
+              slot="note"
+              placeholder="请输入获得的相关证书，如教师资格证、英语四六级等"
+              value="{{formData.certificates}}"
+              bind:change="onInputChange"
+              data-field="certificates"
+              maxlength="200"
+            />
+          </t-cell>
+        </t-cell-group>
+      </view>
+
+      <!-- 个人经验 -->
+      <view class="form-group">
+        <view class="group-title">
+          <t-icon name="star" size="32rpx" />
+          <text>个人经验</text>
+        </view>
+        
+        <t-cell-group>
+          <t-cell title="家教经历">
+            <t-textarea 
+              slot="note"
+              placeholder="请描述您的家教经历，包括教过的学生年级、科目、效果等"
+              value="{{formData.tutorExperience}}"
+              bind:change="onInputChange"
+              data-field="tutorExperience"
+              maxlength="300"
+            />
+          </t-cell>
+          
+          <t-cell title="个人特长">
+            <t-textarea 
+              slot="note"
+              placeholder="请描述您的个人特长和优势"
+              value="{{formData.skills}}"
+              bind:change="onInputChange"
+              data-field="skills"
+              maxlength="200"
+            />
+          </t-cell>
+          
+          <t-cell title="教学理念">
+            <t-textarea 
+              slot="note"
+              placeholder="请简述您的教学理念和方法"
+              value="{{formData.philosophy}}"
+              bind:change="onInputChange"
+              data-field="philosophy"
+              maxlength="200"
+            />
+          </t-cell>
+        </t-cell-group>
+      </view>
+
+      <!-- 联系方式 -->
+      <view class="form-group">
+        <view class="group-title">
+          <t-icon name="mobile" size="32rpx" />
+          <text>联系方式</text>
+        </view>
+        
+        <t-cell-group>
+          <t-cell title="手机号" required>
+            <t-input 
+              slot="note" 
+              type="number"
+              placeholder="请输入手机号"
+              value="{{formData.phone}}"
+              bind:change="onInputChange"
+              data-field="phone"
+            />
+          </t-cell>
+          
+          <t-cell title="微信号">
+            <t-input 
+              slot="note" 
+              placeholder="请输入微信号"
+              value="{{formData.wechat}}"
+              bind:change="onInputChange"
+              data-field="wechat"
+            />
+          </t-cell>
+          
+          <t-cell title="QQ号">
+            <t-input 
+              slot="note" 
+              type="number"
+              placeholder="请输入QQ号"
+              value="{{formData.qq}}"
+              bind:change="onInputChange"
+              data-field="qq"
+            />
+          </t-cell>
+        </t-cell-group>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="form-actions">
+        <t-button 
+          theme="primary" 
+          size="large" 
+          block
+          bind:tap="onSaveResume"
+          loading="{{saving}}"
+        >
+          保存简历
+        </t-button>
+        
+        <t-button 
+          theme="outline" 
+          size="large" 
+          block
+          bind:tap="onPreviewResume"
+          disabled="{{!canPreview}}"
+        >
+          预览简历
+        </t-button>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 简历预览 -->
+  <view class="preview-section" wx:if="{{activeTab === 'preview'}}">
+    <scroll-view scroll-y class="preview-scroll">
+      <view class="resume-preview">
+        <!-- 简历头部 -->
+        <view class="resume-header">
+          <view class="resume-title">个人简历</view>
+          <view class="resume-subtitle">家教教师</view>
+        </view>
+
+        <!-- 基本信息 -->
+        <view class="resume-section">
+          <view class="section-title">基本信息</view>
+          <view class="info-grid">
+            <view class="info-item">
+              <text class="label">姓名：</text>
+              <text class="value">{{formData.name || '未填写'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="label">性别：</text>
+              <text class="value">{{formData.gender === 'male' ? '男' : formData.gender === 'female' ? '女' : '未填写'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="label">年龄：</text>
+              <text class="value">{{formData.age || '未填写'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="label">学校：</text>
+              <text class="value">{{formData.school || '未填写'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="label">专业：</text>
+              <text class="value">{{formData.major || '未填写'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="label">年级：</text>
+              <text class="value">{{formData.grade || '未填写'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 教学能力 -->
+        <view class="resume-section">
+          <view class="section-title">教学能力</view>
+          <view class="content-item">
+            <text class="label">擅长科目：</text>
+            <text class="value">{{formData.subjects.length > 0 ? formData.subjects.join('、') : '未填写'}}</text>
+          </view>
+          <view class="content-item">
+            <text class="label">教学经验：</text>
+            <text class="value">{{formData.experience || '未填写'}}</text>
+          </view>
+          <view class="content-item" wx:if="{{formData.certificates}}">
+            <text class="label">获得证书：</text>
+            <text class="value">{{formData.certificates}}</text>
+          </view>
+        </view>
+
+        <!-- 个人经验 -->
+        <view class="resume-section" wx:if="{{formData.tutorExperience || formData.skills || formData.philosophy}}">
+          <view class="section-title">个人经验</view>
+          <view class="content-item" wx:if="{{formData.tutorExperience}}">
+            <text class="label">家教经历：</text>
+            <text class="value">{{formData.tutorExperience}}</text>
+          </view>
+          <view class="content-item" wx:if="{{formData.skills}}">
+            <text class="label">个人特长：</text>
+            <text class="value">{{formData.skills}}</text>
+          </view>
+          <view class="content-item" wx:if="{{formData.philosophy}}">
+            <text class="label">教学理念：</text>
+            <text class="value">{{formData.philosophy}}</text>
+          </view>
+        </view>
+
+        <!-- 联系方式 -->
+        <view class="resume-section">
+          <view class="section-title">联系方式</view>
+          <view class="content-item">
+            <text class="label">手机号：</text>
+            <text class="value">{{formData.phone || '未填写'}}</text>
+          </view>
+          <view class="content-item" wx:if="{{formData.wechat}}">
+            <text class="label">微信号：</text>
+            <text class="value">{{formData.wechat}}</text>
+          </view>
+          <view class="content-item" wx:if="{{formData.qq}}">
+            <text class="label">QQ号：</text>
+            <text class="value">{{formData.qq}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 预览操作 -->
+      <view class="preview-actions">
+        <t-button 
+          theme="primary" 
+          size="large" 
+          block
+          bind:tap="onExportResume"
+        >
+          导出简历
+        </t-button>
+        
+        <t-button 
+          theme="outline" 
+          size="large" 
+          block
+          bind:tap="onEditResume"
+        >
+          继续编辑
+        </t-button>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- Toast提示 -->
+<t-toast id="t-toast" />

@@ -1,0 +1,115 @@
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 100rpx 60rpx 60rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Logo区域 */
+.logo-section {
+  text-align: center;
+  margin-bottom: 120rpx;
+}
+
+.logo {
+  margin-bottom: 40rpx;
+}
+
+.app-name {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20rpx;
+}
+
+.app-desc {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 登录表单 */
+.login-form {
+  flex: 1;
+}
+
+.wechat-login {
+  margin-bottom: 40rpx;
+}
+
+.divider {
+  margin: 40rpx 0;
+}
+
+.phone-login {
+  margin-bottom: 60rpx;
+}
+
+.input-group {
+  margin-bottom: 30rpx;
+}
+
+.login-btn {
+  margin-top: 40rpx;
+}
+
+/* 用户协议 */
+.agreement {
+  margin-top: auto;
+  padding-top: 40rpx;
+}
+
+.agreement-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.link {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* 管理员入口 */
+.admin-entry {
+  position: fixed;
+  top: 100rpx;
+  right: 40rpx;
+  padding: 20rpx;
+}
+
+.admin-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 管理员弹窗 */
+.admin-dialog {
+  padding: 20rpx 0;
+}
+
+/* TDesign组件样式覆盖 */
+.t-input {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12rpx;
+}
+
+.t-button--theme-primary {
+  background: #0052d9;
+  border-color: #0052d9;
+}
+
+.t-button--theme-outline {
+  background: transparent;
+  border-color: #0052d9;
+  color: #0052d9;
+}
+
+.t-divider__content {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.t-divider__line {
+  border-color: rgba(255, 255, 255, 0.3);
+}

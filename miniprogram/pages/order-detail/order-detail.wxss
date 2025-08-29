@@ -1,0 +1,205 @@
+.order-detail-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 120rpx;
+}
+
+/* 加载状态 */
+.loading-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 订单状态卡片 */
+.status-card {
+  background: linear-gradient(135deg, #0052d9, #1890ff);
+  color: #fff;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.status-text {
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.order-id {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+.status-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-time {
+  font-size: 26rpx;
+  opacity: 0.8;
+}
+
+/* 信息卡片通用样式 */
+.info-card {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+/* 信息项样式 */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+}
+
+.info-label {
+  color: #666;
+  flex: 0 0 160rpx;
+}
+
+.info-value {
+  color: #333;
+  flex: 1;
+  text-align: right;
+}
+
+.price {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+.location, .contact {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.location text, .contact text {
+  margin-right: 10rpx;
+  max-width: 400rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 需求详情 */
+.requirement-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 发布者信息 */
+.publisher-info {
+  display: flex;
+  align-items: center;
+}
+
+.publisher-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.publisher-detail {
+  flex: 1;
+}
+
+.publisher-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.publisher-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 底部操作栏 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 40rpx;
+}
+
+.action-text {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.action-btn {
+  flex: 1;
+}
+
+/* 科目标签 */
+.subject-tag {
+  font-size: 24rpx;
+}
+
+/* 地图弹窗 */
+.location-map {
+  width: 100%;
+  height: 500rpx;
+}
+
+/* 响应式适配 */
+@media (max-width: 750rpx) {
+  .info-card {
+    padding: 20rpx;
+    margin: 15rpx;
+  }
+  
+  .status-card {
+    padding: 20rpx;
+  }
+  
+  .status-text {
+    font-size: 32rpx;
+  }
+  
+  .bottom-actions {
+    padding: 15rpx 20rpx;
+  }
+}

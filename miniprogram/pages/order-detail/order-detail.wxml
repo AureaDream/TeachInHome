@@ -1,0 +1,150 @@
+<!-- 订单详情页面 -->
+<view class="order-detail-container">
+  <!-- 加载状态 -->
+  <t-loading theme="circular" size="40rpx" class="loading-center" wx:if="{{loading}}" />
+
+  <!-- 订单详情内容 -->
+  <block wx:if="{{!loading && order}}">
+    <!-- 订单状态卡片 -->
+    <view class="status-card">
+      <view class="status-header">
+        <view class="status-text">{{getStatusText(order.status)}}</view>
+        <view class="order-id">订单号：{{order.orderId}}</view>
+      </view>
+      <view class="status-info">
+        <view class="status-time">{{order.createTime}}</view>
+        <view class="status-action" wx:if="{{order.status === 'pending'}}">
+          <t-button theme="primary" size="small" bind:tap="onAcceptOrder">接单</t-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 订单基本信息 -->
+    <view class="info-card">
+      <view class="card-title">基本信息</view>
+      <view class="info-item">
+        <view class="info-label">科目</view>
+        <view class="info-value">
+          <t-tag theme="primary" variant="light" class="subject-tag">{{order.subject}}</t-tag>
+        </view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">教育阶段</view>
+        <view class="info-value">{{order.educationStage}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">报酬</view>
+        <view class="info-value price">¥{{order.price}}/小时</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">上课时间</view>
+        <view class="info-value">{{order.timeRequirement}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">上课地点</view>
+        <view class="info-value location">
+          <text>{{order.location}}</text>
+          <t-icon name="location" size="36rpx" color="#0052d9" bind:tap="onViewLocation" />
+        </view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">距离</view>
+        <view class="info-value">{{order.distance}}km</view>
+      </view>
+    </view>
+
+    <!-- 需求详情 -->
+    <view class="info-card">
+      <view class="card-title">需求详情</view>
+      <view class="requirement-content">
+        {{order.requirement}}
+      </view>
+    </view>
+
+    <!-- 学生信息 -->
+    <view class="info-card">
+      <view class="card-title">学生信息</view>
+      <view class="info-item">
+        <view class="info-label">姓名</view>
+        <view class="info-value">{{order.studentName}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">性别</view>
+        <view class="info-value">{{order.studentGender === 'male' ? '男' : '女'}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">年级</view>
+        <view class="info-value">{{order.studentGrade}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">联系方式</view>
+        <view class="info-value contact">
+          <text>{{isAccepted ? order.contactPhone : '接单后可见'}}</text>
+          <t-icon wx:if="{{isAccepted}}" name="call" size="36rpx" color="#0052d9" bind:tap="onCallStudent" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 发布者信息 -->
+    <view class="info-card">
+      <view class="card-title">发布者信息</view>
+      <view class="publisher-info">
+        <image class="publisher-avatar" src="{{order.publisherAvatar}}" mode="aspectFill" />
+        <view class="publisher-detail">
+          <view class="publisher-name">{{order.publisherName}}</view>
+          <view class="publisher-time">发布于 {{formatTime(order.createTime)}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作栏 -->
+    <view class="bottom-actions">
+      <view class="action-item" bind:tap="onToggleFavorite">
+        <t-icon name="{{isFavorite ? 'heart-filled' : 'heart'}}" size="44rpx" color="{{isFavorite ? '#ff4d4f' : '#999'}}" />
+        <text class="action-text">{{isFavorite ? '已收藏' : '收藏'}}</text>
+      </view>
+      <view class="action-item" bind:tap="onShare">
+        <t-icon name="share" size="44rpx" color="#999" />
+        <text class="action-text">分享</text>
+      </view>
+      <view class="action-btn">
+        <t-button theme="primary" block wx:if="{{!isAccepted && order.status === 'pending'}}" bind:tap="onAcceptOrder">立即接单</t-button>
+        <t-button theme="primary" block wx:elif="{{isAccepted}}" bind:tap="onContactStudent">联系学生</t-button>
+        <t-button theme="default" block wx:else disabled>{{getStatusText(order.status)}}</t-button>
+      </view>
+    </view>
+  </block>
+
+  <!-- 空状态 -->
+  <t-empty wx:if="{{!loading && !order}}" description="订单不存在或已被删除" />
+
+  <!-- 接单确认弹窗 -->
+  <t-dialog
+    visible="{{showConfirmDialog}}"
+    title="确认接单"
+    content="接单后将获得学生联系方式，是否确认接单？"
+    confirm-btn="确认接单"
+    cancel-btn="再想想"
+    bind:confirm="onConfirmAccept"
+    bind:cancel="onCancelAccept"
+  />
+
+  <!-- 地图弹窗 -->
+  <t-dialog
+    visible="{{showMapDialog}}"
+    title="上课地点"
+    footer=""
+    bind:close="onCloseMap"
+  >
+    <map
+      class="location-map"
+      longitude="{{mapLocation.longitude}}"
+      latitude="{{mapLocation.latitude}}"
+      markers="{{mapMarkers}}"
+      scale="16"
+    ></map>
+  </t-dialog>
+
+  <!-- Toast 提示 -->
+  <t-toast id="t-toast" />
+</view>
