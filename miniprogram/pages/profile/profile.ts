@@ -1,6 +1,7 @@
 import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
 
 interface UserInfo {
+  _id: string;
   userId: string;
   nickName: string;
   avatarUrl: string;
@@ -47,6 +48,7 @@ Page({
     showNotificationDialog: false,
     showPrivacyDialog: false,
     showAboutDialog: false,
+    showContactDialog: false,
     
     // 编辑表单
     editForm: {
@@ -64,7 +66,13 @@ Page({
     } as PrivacySettings,
     
     // 消息通知
-    notifications: [] as Notification[]
+    notifications: [] as Notification[],
+    
+    // 客服信息
+    customerService: {
+      nickname: '一杯',
+      wechatId: 'onepeople2city'
+    }
   },
 
   onLoad() {
@@ -95,47 +103,126 @@ Page({
   // 加载用户信息
   loadUserInfo() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (userInfo) {
+    console.log('从本地存储获取的用户信息:', userInfo);
+    
+    if (userInfo && userInfo._id) {
       // 从云数据库获取最新用户信息
       const db = wx.cloud.database();
       db.collection('users').doc(userInfo._id).get().then(res => {
         const latestUserInfo = res.data;
-        // 更新本地存储
-        wx.setStorageSync('userInfo', latestUserInfo);
+        console.log('从云数据库获取的用户信息:', latestUserInfo);
         
-        this.setData({ userInfo: latestUserInfo });
-        
-        // 初始化编辑表单
-        this.setData({
-          editForm: {
-            nickName: latestUserInfo.nickName || '',
-            phone: latestUserInfo.phone || '',
-            email: latestUserInfo.email || '',
-            bio: latestUserInfo.bio || ''
-          }
+        // 处理头像URL - 如果是云存储fileID，需要获取临时链接
+        this.processAvatarUrl(latestUserInfo).then(processedUserInfo => {
+          // 更新本地存储
+          wx.setStorageSync('userInfo', processedUserInfo);
+          
+          this.setData({ userInfo: processedUserInfo as UserInfo });
+          
+          // 初始化编辑表单
+          this.setData({
+            editForm: {
+              nickName: processedUserInfo.nickName || '',
+              phone: processedUserInfo.phone || '',
+              email: processedUserInfo.email || '',
+              bio: processedUserInfo.bio || ''
+            }
+          });
         });
       }).catch(err => {
         console.error('获取用户信息失败', err);
         // 如果获取失败，使用本地缓存的用户信息
-        this.setData({ userInfo });
-        
-        // 初始化编辑表单
-        this.setData({
-          editForm: {
-            nickName: userInfo.nickName || '',
-            phone: userInfo.phone || '',
-            email: userInfo.email || '',
-            bio: userInfo.bio || ''
-          }
+        this.processAvatarUrl(userInfo).then(processedUserInfo => {
+          this.setData({ userInfo: processedUserInfo as UserInfo });
+          
+          // 初始化编辑表单
+          this.setData({
+            editForm: {
+              nickName: processedUserInfo.nickName || '',
+              phone: processedUserInfo.phone || '',
+              email: processedUserInfo.email || '',
+              bio: processedUserInfo.bio || ''
+            }
+          });
         });
       });
+    } else {
+      // 如果没有用户信息，创建默认数据用于测试
+      console.log('没有用户信息，创建默认数据');
+      const defaultUserInfo = {
+        _id: 'test_user_id',
+        userId: 'test123',
+        nickName: '测试用户',
+        avatarUrl: '',
+        phone: '',
+        email: '',
+        bio: ''
+      };
+      
+      this.setData({ 
+        userInfo: defaultUserInfo,
+        editForm: {
+          nickName: defaultUserInfo.nickName,
+          phone: defaultUserInfo.phone,
+          email: defaultUserInfo.email,
+          bio: defaultUserInfo.bio
+        }
+      });
     }
+  },
+
+  // 处理头像URL，将云存储fileID转换为可访问的URL
+  async processAvatarUrl(userInfo: any): Promise<any> {
+    if (!userInfo) return userInfo;
+    
+    // 如果avatarUrl是云存储的fileID，需要获取临时下载链接
+    if (userInfo.avatarUrl && userInfo.avatarUrl.startsWith('cloud://')) {
+      try {
+        // 确保云开发环境已初始化
+        if (!wx.cloud) {
+          console.error('云开发未初始化');
+          userInfo.avatarUrl = '/images/avatar-default.png';
+          return userInfo;
+        }
+        
+        wx.cloud.init({
+          env: 'cloud1-3gqdqvkpbeab224c'
+        });
+        
+        const result = await wx.cloud.getTempFileURL({
+          fileList: [userInfo.avatarUrl]
+        });
+        
+        if (result.fileList && result.fileList.length > 0) {
+          const fileInfo = result.fileList[0];
+          if (fileInfo.status === 0 && fileInfo.tempFileURL) {
+            userInfo.avatarUrl = fileInfo.tempFileURL;
+            console.log('头像URL转换成功:', userInfo.avatarUrl);
+          } else {
+            console.error('获取临时URL失败:', fileInfo.errMsg);
+            userInfo.avatarUrl = '/images/avatar-default.png';
+          }
+        } else {
+          console.error('未获取到文件信息');
+          userInfo.avatarUrl = '/images/avatar-default.png';
+        }
+      } catch (error) {
+        console.error('获取头像临时URL失败:', error);
+        // 如果获取失败，使用默认头像
+        userInfo.avatarUrl = '/images/avatar-default.png';
+      }
+    } else if (!userInfo.avatarUrl || userInfo.avatarUrl === '') {
+      // 如果没有头像URL，使用默认头像
+      userInfo.avatarUrl = '/images/avatar-default.png';
+    }
+    
+    return userInfo;
   },
 
   // 加载统计数据
   loadStats() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo._openid) return;
+    if (!userInfo || !userInfo._id) return;
     
     const db = wx.cloud.database();
     const _ = db.command;
@@ -143,63 +230,74 @@ Page({
     // 获取订单数量
     const orderPromise = db.collection('orders')
       .where({
-        _openid: userInfo._openid
+        userId: userInfo._id
       })
       .count();
     
     // 获取收藏数量
     const favoritePromise = db.collection('favorites')
       .where({
-        _openid: userInfo._openid
+        userId: userInfo._id
       })
       .count();
     
     // 获取帖子数量
     const postPromise = db.collection('posts')
       .where({
-        _openid: userInfo._openid
+        userId: userInfo._id
       })
       .count();
     
-    // 并行请求
-    Promise.all([orderPromise, favoritePromise, postPromise])
-      .then(([orderRes, favoriteRes, postRes]) => {
+    // 分别处理每个请求
+    let orderCount = 0;
+    let favoriteCount = 0;
+    let postCount = 0;
+    let completedRequests = 0;
+    
+    const updateStats = () => {
+      completedRequests++;
+      if (completedRequests === 3) {
         this.setData({
           stats: {
-            orderCount: orderRes.total || 0,
-            favoriteCount: favoriteRes.total || 0,
-            postCount: postRes.total || 0
+            orderCount,
+            favoriteCount,
+            postCount
           }
         });
-      })
-      .catch(err => {
-        console.error('获取统计数据失败', err);
-        // 加载失败时使用默认值
-        this.setData({
-          stats: {
-            orderCount: 0,
-            favoriteCount: 0,
-            postCount: 0
-          }
-        });
-      });
+      }
+    };
+    
+    orderPromise.then((res: any) => {
+      orderCount = res.total || 0;
+      updateStats();
+    }).catch(() => updateStats());
+    
+    favoritePromise.then((res: any) => {
+      favoriteCount = res.total || 0;
+      updateStats();
+    }).catch(() => updateStats());
+    
+    postPromise.then((res: any) => {
+      postCount = res.total || 0;
+      updateStats();
+    }).catch(() => updateStats());
   },
 
   // 加载消息通知
   loadNotifications() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo._openid) return;
+    if (!userInfo || !userInfo._id) return;
     
     const db = wx.cloud.database();
     
     db.collection('notifications')
       .where({
-        user_id: userInfo._openid
+        userId: userInfo._id
       })
       .orderBy('createTime', 'desc')
       .limit(10)
       .get()
-      .then(res => {
+      .then((res: any) => {
         const notifications = res.data.map((item: any) => ({
           id: item._id,
           title: item.title,
@@ -229,29 +327,40 @@ Page({
   formatTime(date: Date | string | number) {
     if (!date) return '';
     
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const hour = d.getHours().toString().padStart(2, '0');
-    const minute = d.getMinutes().toString().padStart(2, '0');
+    let d: Date;
+    if (date instanceof Date) {
+      d = date;
+    } else {
+      d = new Date(date as string | number);
+    }
     
-    return `${year}-${month}-${day} ${hour}:${minute}`;
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString();
+    const day = d.getDate().toString();
+    const hour = d.getHours().toString();
+    const minute = d.getMinutes().toString();
+    
+    const paddedMonth = month.length === 1 ? '0' + month : month;
+    const paddedDay = day.length === 1 ? '0' + day : day;
+    const paddedHour = hour.length === 1 ? '0' + hour : hour;
+    const paddedMinute = minute.length === 1 ? '0' + minute : minute;
+    
+    return `${year}-${paddedMonth}-${paddedDay} ${paddedHour}:${paddedMinute}`;
   },
 
   // 加载隐私设置
   loadPrivacySettings() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo._openid) return;
+    if (!userInfo || !userInfo._id) return;
     
     const db = wx.cloud.database();
     
     db.collection('user_settings')
       .where({
-        _openid: userInfo._openid
+        userId: userInfo._id
       })
       .get()
-      .then(res => {
+      .then((res: any) => {
         if (res.data.length > 0) {
           const settings = res.data[0];
           this.setData({
@@ -266,7 +375,7 @@ Page({
           wx.setStorageSync('privacySettings', this.data.privacySettings);
         } else {
           // 如果没有设置记录，使用默认值并创建记录
-          this.createDefaultPrivacySettings(userInfo._openid);
+          this.createDefaultPrivacySettings(userInfo._id);
         }
       })
       .catch(err => {
@@ -280,7 +389,7 @@ Page({
   },
   
   // 创建默认隐私设置
-  createDefaultPrivacySettings(openid: string) {
+  createDefaultPrivacySettings(userId: string) {
     const defaultSettings = {
       publicProfile: true,
       orderNotification: true,
@@ -292,7 +401,7 @@ Page({
     db.collection('user_settings')
       .add({
         data: {
-          _openid: openid,
+          userId: userId,
           ...defaultSettings,
           createTime: new Date()
         }
@@ -354,79 +463,253 @@ Page({
 
   // 编辑个人信息
   onEditProfile() {
-    this.setData({ showEditDialog: true });
+    // 确保编辑表单显示最新的用户信息
+    const { userInfo } = this.data;
+    console.log('准备编辑个人信息，当前用户信息:', userInfo);
+    
+    // 检查用户是否已登录
+    if (!userInfo || !userInfo._id) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请先登录',
+        theme: 'warning'
+      });
+      wx.navigateTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
+    
+    // 初始化编辑表单数据
+    const editFormData = {
+      nickName: userInfo.nickName || '',
+      phone: userInfo.phone || '',
+      email: userInfo.email || '',
+      bio: userInfo.bio || ''
+    };
+    
+    console.log('编辑表单初始数据:', editFormData);
+    
+    this.setData({
+      editForm: editFormData,
+      showEditDialog: true
+    });
   },
 
   onCancelEdit() {
-    this.setData({ showEditDialog: false });
+    // 取消编辑时重置表单数据
+    const { userInfo } = this.data;
+    this.setData({
+      editForm: {
+        nickName: userInfo.nickName || '',
+        phone: userInfo.phone || '',
+        email: userInfo.email || '',
+        bio: userInfo.bio || ''
+      },
+      showEditDialog: false
+    });
   },
 
-  onConfirmEdit() {
+  // 表单输入事件处理
+  onNickNameChange(e: any) {
+    const value = e.detail.value;
+    console.log('昵称输入变化:', value);
+    this.setData({
+      'editForm.nickName': value
+    });
+  },
+
+  onPhoneChange(e: any) {
+    const value = e.detail.value;
+    console.log('手机号输入变化:', value);
+    this.setData({
+      'editForm.phone': value
+    });
+  },
+
+  onEmailChange(e: any) {
+    const value = e.detail.value;
+    console.log('邮箱输入变化:', value);
+    this.setData({
+      'editForm.email': value
+    });
+  },
+
+  onBioChange(e: any) {
+    const value = e.detail.value;
+    console.log('个人简介输入变化:', value);
+    this.setData({
+      'editForm.bio': value
+    });
+  },
+
+  // 确认编辑个人信息
+  async onConfirmEdit() {
+    console.log('开始确认编辑个人信息');
+    
+    // 验证表单数据
     if (!this.validateEditForm()) {
       return;
     }
     
     const { editForm, userInfo } = this.data;
+    console.log('准备更新的数据:', editForm);
+    console.log('当前用户信息:', userInfo);
+    
+    // 检查用户ID
+    if (!userInfo._id) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '用户信息异常，请重新登录',
+        theme: 'error'
+      });
+      setTimeout(() => {
+        wx.redirectTo({
+          url: '/pages/login/login'
+        });
+      }, 1500);
+      return;
+    }
     
     // 显示加载提示
     wx.showLoading({
-      title: '更新中...'
+      title: '更新中...',
+      mask: true
     });
     
-    // 更新云数据库中的用户信息
-    const db = wx.cloud.database();
-    db.collection('users').doc(userInfo._id).update({
-      data: {
-        nickName: editForm.nickName,
-        phone: editForm.phone,
-        email: editForm.email,
-        bio: editForm.bio,
-        updateTime: new Date()
+    try {
+      // 初始化云开发环境
+      if (!wx.cloud) {
+        console.error('云开发未初始化');
+        throw new Error('云开发未初始化');
       }
-    }).then(() => {
-      // 更新本地用户信息
-      const updatedUserInfo = {
-        ...userInfo,
-        nickName: editForm.nickName,
-        phone: editForm.phone,
-        email: editForm.email,
-        bio: editForm.bio
+      
+      // 设置云开发环境ID
+      wx.cloud.init({
+        env: 'cloud1-3gqdqvkpbeab224c'
+      });
+      
+      const db = wx.cloud.database();
+      
+      // 准备更新数据，只更新非空字段
+      const updateData: any = {
+        updateTime: db.serverDate() // 使用服务器时间
       };
       
-      wx.setStorageSync('userInfo', updatedUserInfo);
+      // 只更新有值的字段
+      if (editForm.nickName && editForm.nickName.trim()) {
+        updateData.nickName = editForm.nickName.trim();
+      }
+      if (editForm.phone !== undefined) {
+        updateData.phone = editForm.phone.trim();
+      }
+      if (editForm.email !== undefined) {
+        updateData.email = editForm.email.trim();
+      }
+      if (editForm.bio !== undefined) {
+        updateData.bio = editForm.bio.trim();
+      }
       
-      this.setData({
-        userInfo: updatedUserInfo,
-        showEditDialog: false
-      });
+      console.log('即将更新到云数据库的数据:', updateData);
+      console.log('目标文档ID:', userInfo._id);
+      
+      // 更新云数据库中的用户信息
+      const updateResult = await db.collection('users')
+        .doc(userInfo._id)
+        .update({
+          data: updateData
+        });
+      
+      console.log('云数据库更新结果:', updateResult);
+      
+      // 检查更新结果
+      if (updateResult && (updateResult.stats?.updated > 0 || updateResult.errMsg === 'document.update:ok')) {
+        // 更新成功，同步本地数据
+        const updatedUserInfo = {
+          ...userInfo,
+          ...updateData,
+          updateTime: new Date() // 本地使用当前时间
+        };
+        
+        // 更新本地存储
+        wx.setStorageSync('userInfo', updatedUserInfo);
+        
+        // 更新页面数据
+        this.setData({
+          userInfo: updatedUserInfo,
+          showEditDialog: false
+        });
+        
+        // 更新全局用户信息（如果存在）
+        const app = getApp();
+        if (app.globalData && app.globalData.userInfo) {
+          app.globalData.userInfo = updatedUserInfo;
+        }
+        
+        wx.hideLoading();
+        
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '个人信息更新成功',
+          theme: 'success'
+        });
+        
+        console.log('个人信息更新完成:', updatedUserInfo);
+      } else {
+        console.error('更新结果异常:', updateResult);
+        throw new Error('更新失败，可能是权限问题或文档不存在');
+      }
+      
+    } catch (error) {
+      console.error('更新用户信息失败:', error);
       
       wx.hideLoading();
+      
+      let errorMessage = '更新失败，请稍后重试';
+      
+      if (error instanceof Error) {
+        const errMsg = error.message.toLowerCase();
+        if (errMsg.includes('permission') || errMsg.includes('权限')) {
+          errorMessage = '没有权限更新用户信息，请检查数据库权限设置';
+        } else if (errMsg.includes('network') || errMsg.includes('网络')) {
+          errorMessage = '网络连接失败，请检查网络';
+        } else if (errMsg.includes('not found') || errMsg.includes('不存在')) {
+          errorMessage = '用户信息不存在，请重新登录';
+        } else if (errMsg.includes('云开发')) {
+          errorMessage = '云开发服务异常，请稍后重试';
+        }
+        console.error('详细错误信息:', error.message);
+      }
       
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '个人信息已更新',
-        theme: 'success'
-      });
-    }).catch(err => {
-      console.error('更新用户信息失败', err);
-      
-      wx.hideLoading();
-      
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '更新失败，请稍后重试',
+        message: errorMessage,
         theme: 'error'
       });
-    });
+      
+      // 如果是用户不存在的错误，跳转到登录页
+      if (errorMessage.includes('重新登录')) {
+        setTimeout(() => {
+          wx.redirectTo({
+            url: '/pages/login/login'
+          });
+        }, 2000);
+      }
+    }
   },
 
   // 验证编辑表单
   validateEditForm(): boolean {
     const { editForm } = this.data;
     
-    if (!editForm.nickName.trim()) {
+    console.log('开始验证表单数据:', editForm);
+    
+    // 验证昵称
+    if (!editForm.nickName || !editForm.nickName.trim()) {
       Toast({
         context: this,
         selector: '#t-toast',
@@ -436,26 +719,66 @@ Page({
       return false;
     }
     
-    if (editForm.phone && !/^1[3-9]\d{9}$/.test(editForm.phone)) {
+    if (editForm.nickName.trim().length < 2) {
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '请输入正确的手机号',
+        message: '昵称至少需要2个字符',
         theme: 'warning'
       });
       return false;
     }
     
-    if (editForm.email && !/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(editForm.email)) {
+    if (editForm.nickName.trim().length > 20) {
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '请输入正确的邮箱',
+        message: '昵称不能超过20个字符',
         theme: 'warning'
       });
       return false;
     }
     
+    // 验证手机号（如果填写了）
+    if (editForm.phone && editForm.phone.trim()) {
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(editForm.phone.trim())) {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '请输入正确的手机号格式',
+          theme: 'warning'
+        });
+        return false;
+      }
+    }
+    
+    // 验证邮箱（如果填写了）
+    if (editForm.email && editForm.email.trim()) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(editForm.email.trim())) {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '请输入正确的邮箱格式',
+          theme: 'warning'
+        });
+        return false;
+      }
+    }
+    
+    // 验证个人简介长度
+    if (editForm.bio && editForm.bio.trim().length > 200) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '个人简介不能超过200个字符',
+        theme: 'warning'
+      });
+      return false;
+    }
+    
+    console.log('表单验证通过');
     return true;
   },
 
@@ -491,7 +814,7 @@ Page({
 
   onConfirmPrivacy() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo._openid) return;
+    if (!userInfo || !userInfo._id) return;
     
     // 显示加载提示
     wx.showLoading({
@@ -503,47 +826,82 @@ Page({
     // 查询是否已有设置记录
     db.collection('user_settings')
       .where({
-        _openid: userInfo._openid
+        userId: userInfo._id
       })
       .get()
-      .then(res => {
+      .then((res: any) => {
         if (res.data.length > 0) {
           // 更新现有记录
-          const settingId = res.data[0]._id;
-          return db.collection('user_settings').doc(settingId).update({
+          const settingId = res.data[0]._id as string;
+          db.collection('user_settings').doc(settingId).update({
             data: {
               ...this.data.privacySettings,
               updateTime: new Date()
             }
+          }).then(() => {
+            // 保存到本地存储
+            wx.setStorageSync('privacySettings', this.data.privacySettings);
+            
+            this.setData({ showPrivacyDialog: false });
+            
+            wx.hideLoading();
+            
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '隐私设置已保存',
+              theme: 'success'
+            });
+          }).catch((err: any) => {
+            console.error('更新隐私设置失败', err);
+            
+            wx.hideLoading();
+            
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '保存失败，请稍后重试',
+              theme: 'error'
+            });
           });
         } else {
           // 创建新记录
-          return db.collection('user_settings').add({
+          db.collection('user_settings').add({
             data: {
-              _openid: userInfo._openid,
+              userId: userInfo._id,
               ...this.data.privacySettings,
               createTime: new Date()
             }
+          }).then(() => {
+            // 保存到本地存储
+            wx.setStorageSync('privacySettings', this.data.privacySettings);
+            
+            this.setData({ showPrivacyDialog: false });
+            
+            wx.hideLoading();
+            
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '隐私设置已保存',
+              theme: 'success'
+            });
+          }).catch((err: any) => {
+            console.error('创建隐私设置失败', err);
+            
+            wx.hideLoading();
+            
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '保存失败，请稍后重试',
+              theme: 'error'
+            });
           });
         }
       })
-      .then(() => {
-        // 保存到本地存储
-        wx.setStorageSync('privacySettings', this.data.privacySettings);
-        
-        this.setData({ showPrivacyDialog: false });
-        
-        wx.hideLoading();
-        
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '隐私设置已保存',
-          theme: 'success'
-        });
-      })
-      .catch(err => {
-        console.error('保存隐私设置失败', err);
+      .catch((err: any) => {
+        console.error('查询隐私设置失败', err);
         
         wx.hideLoading();
         
@@ -560,6 +918,125 @@ Page({
     this.setData({ showPrivacyDialog: false });
   },
 
+  // 编辑头像
+  onEditAvatar() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        this.uploadAvatar(tempFilePath);
+      },
+      fail: (err) => {
+        console.error('选择图片失败', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '选择图片失败',
+          theme: 'error'
+        });
+      }
+    });
+  },
+
+  // 上传头像到云存储
+  uploadAvatar(tempFilePath: string) {
+    wx.showLoading({
+      title: '上传中...'
+    });
+
+    const userInfo = this.data.userInfo;
+    const fileName = `${userInfo._id || userInfo.userId || Date.now()}.jpg`;
+    const cloudPath = `cloud-storage/avatars/${fileName}`;
+
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
+      filePath: tempFilePath,
+      success: (uploadRes) => {
+        console.log('头像上传成功', uploadRes);
+        this.updateUserAvatar(uploadRes.fileID);
+      },
+      fail: (err) => {
+        console.error('头像上传失败', err);
+        wx.hideLoading();
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '头像上传失败',
+          theme: 'error'
+        });
+      }
+    });
+  },
+
+  // 更新用户头像信息
+  async updateUserAvatar(fileID: string) {
+    const db = wx.cloud.database();
+    const userInfo = this.data.userInfo;
+
+    try {
+      const updateResult = await db.collection('users').doc(userInfo._id).update({
+        data: {
+          avatarUrl: fileID,
+          updateTime: new Date()
+        }
+      });
+      
+      console.log('头像更新成功', updateResult);
+      wx.hideLoading();
+      
+      // 获取头像的临时链接用于显示
+      const tempUrlResult = await wx.cloud.getTempFileURL({
+        fileList: [fileID]
+      });
+      
+      let displayUrl = fileID;
+      if (tempUrlResult.fileList && tempUrlResult.fileList.length > 0 && tempUrlResult.fileList[0].tempFileURL) {
+        displayUrl = tempUrlResult.fileList[0].tempFileURL;
+      }
+      
+      // 更新本地数据
+      const updatedUserInfo = {
+        ...userInfo,
+        avatarUrl: displayUrl
+      };
+      
+      this.setData({
+        userInfo: updatedUserInfo
+      });
+      
+      // 更新本地存储
+      wx.setStorageSync('userInfo', {
+        ...updatedUserInfo,
+        avatarUrl: fileID // 本地存储保存原始fileID
+      });
+      
+      // 更新全局用户信息
+      const app = getApp();
+      if (app.globalData.userInfo) {
+        app.globalData.userInfo.avatarUrl = displayUrl;
+      }
+      
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '头像更新成功',
+        theme: 'success'
+      });
+      
+    } catch (err) {
+      console.error('头像更新失败', err);
+      wx.hideLoading();
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '头像更新失败',
+        theme: 'error'
+      });
+    }
+  },
+
   // 关于我们
   onAboutUs() {
     this.setData({ showAboutDialog: true });
@@ -571,14 +1048,42 @@ Page({
 
   // 联系客服
   onContactService() {
-    wx.makePhoneCall({
-      phoneNumber: '400-123-4567',
-      fail: () => {
+    this.setData({
+      showContactDialog: true
+    });
+  },
+
+  // 关闭客服弹窗
+  onCloseContactDialog() {
+    this.setData({
+      showContactDialog: false
+    });
+  },
+
+  // 复制微信号
+  onCopyWechatId() {
+    const { customerService } = this.data;
+    wx.setClipboardData({
+      data: customerService.wechatId,
+      success: () => {
         Toast({
           context: this,
           selector: '#t-toast',
-          message: '拨打电话失败',
-          theme: 'warning'
+          message: '微信号已复制到剪贴板',
+          theme: 'success'
+        });
+        // 复制成功后关闭弹窗
+        this.setData({
+          showContactDialog: false
+        });
+      },
+      fail: (err) => {
+        console.error('复制微信号失败', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '复制失败，请手动复制',
+          theme: 'error'
         });
       }
     });

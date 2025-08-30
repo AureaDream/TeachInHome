@@ -184,8 +184,8 @@ Page({
     if (this.data.searchValue) {
       const keyword = this.data.searchValue.toLowerCase();
       filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(keyword) ||
-        post.content.toLowerCase().includes(keyword)
+        post.title.toLowerCase().indexOf(keyword) !== -1 ||
+        post.content.toLowerCase().indexOf(keyword) !== -1
       );
     }
     

@@ -2,10 +2,19 @@
   <!-- 用户信息卡片 -->
   <view class="user-card">
     <view class="user-info">
-      <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill" />
+      <view class="avatar-container">
+        <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill" />
+        <view class="edit-avatar-btn" bindtap="onEditAvatar">
+          <t-icon name="edit" size="32rpx" color="#fff" />
+        </view>
+      </view>
       <view class="info-content">
-        <text class="username">{{userInfo.nickName || '未登录'}}</text>
-        <text class="user-id">ID: {{userInfo.userId || '---'}}</text>
+        <view class="username-container">
+          <text class="username">{{userInfo.nickName || '未登录'}}</text>
+          <view class="edit-profile-btn" bindtap="onEditProfile">
+            <t-icon name="edit" size="28rpx" color="#666" />
+          </view>
+        </view>
       </view>
     </view>
     <view class="user-stats">
@@ -82,48 +91,101 @@
   <t-dialog
     visible="{{showEditDialog}}"
     title="编辑个人信息"
-    confirm-btn="保存"
-    cancel-btn="取消"
+    confirm-btn="{{ {content: '保存', variant: 'base', loading: false} }}"
+    cancel-btn="{{ {content: '取消', variant: 'outline'} }}"
     bind:confirm="onConfirmEdit"
     bind:cancel="onCancelEdit"
+    width="90%"
+    z-index="11500"
+    show-overlay="{{true}}"
+    close-on-overlay-click="{{false}}"
   >
-    <view class="edit-form">
+    <view class="edit-form" slot="content">
+      <!-- 昵称输入 -->
       <view class="form-item">
-        <text class="form-label">昵称</text>
+        <view class="form-label-container">
+          <text class="form-label required">昵称</text>
+          <text class="form-tip">2-20个字符</text>
+        </view>
         <t-input 
-          model:value="{{editForm.nickName}}"
+          class="form-input"
+          value="{{editForm.nickName}}"
           placeholder="请输入昵称"
-          maxlength="20"
+          maxlength="{{20}}"
+          bind:change="onNickNameChange"
+          bind:blur="onNickNameChange"
+          bind:input="onNickNameChange"
+          clearable="{{true}}"
+          size="medium"
+          align="left"
         />
       </view>
       
+      <!-- 手机号输入 -->
       <view class="form-item">
-        <text class="form-label">手机号</text>
+        <view class="form-label-container">
+          <text class="form-label">手机号</text>
+          <text class="form-tip">选填，11位手机号</text>
+        </view>
         <t-input 
-          model:value="{{editForm.phone}}"
+          class="form-input"
+          value="{{editForm.phone}}"
           placeholder="请输入手机号"
           type="number"
-          maxlength="11"
+          maxlength="{{11}}"
+          bind:change="onPhoneChange"
+          bind:blur="onPhoneChange"
+          bind:input="onPhoneChange"
+          clearable="{{true}}"
+          size="medium"
+          align="left"
         />
       </view>
       
+      <!-- 邮箱输入 -->
       <view class="form-item">
-        <text class="form-label">邮箱</text>
+        <view class="form-label-container">
+          <text class="form-label">邮箱</text>
+          <text class="form-tip">选填，用于接收通知</text>
+        </view>
         <t-input 
-          model:value="{{editForm.email}}"
-          placeholder="请输入邮箱"
-          maxlength="50"
+          class="form-input"
+          value="{{editForm.email}}"
+          placeholder="请输入邮箱地址"
+          maxlength="{{50}}"
+          bind:change="onEmailChange"
+          bind:blur="onEmailChange"
+          bind:input="onEmailChange"
+          clearable="{{true}}"
+          size="medium"
+          align="left"
         />
       </view>
       
+      <!-- 个人简介输入 -->
       <view class="form-item">
-        <text class="form-label">个人简介</text>
+        <view class="form-label-container">
+          <text class="form-label">个人简介</text>
+          <text class="form-tip">选填，最多200字</text>
+        </view>
         <t-textarea 
-          model:value="{{editForm.bio}}"
-          placeholder="请输入个人简介"
-          maxlength="200"
-          autosize
+          class="form-textarea"
+          value="{{editForm.bio}}"
+          placeholder="请输入个人简介，介绍一下自己吧~"
+          maxlength="{{200}}"
+          autosize="{{true}}"
+          bind:change="onBioChange"
+          bind:blur="onBioChange"
+          bind:input="onBioChange"
+          indicator="{{true}}"
+          bordered="{{true}}"
         />
+      </view>
+      
+      <!-- 表单提示信息 -->
+      <view class="form-notice">
+        <t-icon name="info-circle" size="28rpx" color="#0052d9" />
+        <text class="notice-text">个人信息将同步到云端，请确保信息真实有效</text>
       </view>
     </view>
   </t-dialog>
@@ -191,6 +253,40 @@
         <text class="link" bind:tap="onOpenUserAgreement">用户协议</text>
         <text class="link-divider">|</text>
         <text class="link" bind:tap="onOpenPrivacyPolicy">隐私政策</text>
+      </view>
+    </view>
+  </t-dialog>
+
+  <!-- 联系客服弹窗 -->
+  <t-dialog
+    visible="{{showContactDialog}}"
+    title="联系客服"
+    confirm-btn="{{ {content: '复制微信号', variant: 'base'} }}"
+    cancel-btn="{{ {content: '关闭', variant: 'outline'} }}"
+    bind:confirm="onCopyWechatId"
+    bind:cancel="onCloseContactDialog"
+    width="80%"
+  >
+    <view class="contact-content" slot="content">
+      <view class="contact-info">
+        <view class="contact-item">
+          <t-icon name="user" size="40rpx" color="#0052d9" />
+          <view class="contact-text">
+            <text class="contact-label">客服昵称</text>
+            <text class="contact-value">{{customerService.nickname}}</text>
+          </view>
+        </view>
+        <view class="contact-item">
+          <t-icon name="logo-wechat" size="40rpx" color="#07c160" />
+          <view class="contact-text">
+            <text class="contact-label">微信号</text>
+            <text class="contact-value selectable">{{customerService.wechatId}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="contact-tip">
+        <t-icon name="info-circle" size="28rpx" color="#0052d9" />
+        <text class="tip-text">点击"复制微信号"按钮可快速复制到剪贴板</text>
       </view>
     </view>
   </t-dialog>

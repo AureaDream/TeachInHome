@@ -38,7 +38,8 @@ Page({
           },
           success: (result) => {
             console.log('云函数登录成功', result);
-            const { openid, userInfo } = result.result;
+            // 添加类型断言，确保可以访问 openid 和 userInfo
+            const { openid, userInfo } = result.result as { openid: string, userInfo: any };
             
             // 检查用户是否已存在
             const db = wx.cloud.database();
@@ -48,7 +49,8 @@ Page({
               if (res.data.length > 0) {
                 // 用户已存在，更新信息
                 const dbUserInfo = res.data[0];
-                const userId = dbUserInfo._id;
+                // 添加类型断言，确保 userId 是 string 类型
+                const userId = dbUserInfo._id as string;
                 
                 // 合并用户信息
                 const updatedUserInfo = {
@@ -75,30 +77,40 @@ Page({
                 });
               } else {
                 // 新用户，创建记录
-                const newUser = {
-                  nickName: userInfo.nickName,
-                  avatarUrl: userInfo.avatarUrl,
+                console.log('创建新用户，微信用户信息:', userInfo);
+                
+                const newUser: any = {
+                  nickName: userInfo.nickName || '微信用户',
+                  avatarUrl: userInfo.avatarUrl || '',
                   loginType: 'wechat',
                   isAuthenticated: false,
-                  createTime: new Date(),
-                  lastLoginTime: new Date(),
+                  createTime: db.serverDate(),
+                  lastLoginTime: db.serverDate(),
                   phone: '',
                   email: '',
                   bio: '',
                   role: 'user',
                   status: 'active'
+                  // _openid 字段由云数据库自动添加，不需要手动设置
                 };
+                
+                console.log('准备创建的用户数据:', newUser);
                 
                 db.collection('users').add({
                   data: newUser
                 }).then(res => {
+                  console.log('用户创建成功:', res);
                   // 添加ID并保存到本地
                   newUser._id = res._id;
-                  newUser._openid = openid;
+                  
+                  // 保存到本地存储
                   wx.setStorageSync('userInfo', newUser);
+                  console.log('用户信息已保存到本地:', newUser);
+                  
                   this.loginSuccess();
                 }).catch(err => {
-                  console.error('创建用户失败', err);
+                  console.error('创建用户失败:', err);
+                  console.error('错误详情:', err.errMsg);
                   this.loginFail();
                 });
               }
@@ -192,7 +204,7 @@ Page({
         phone
       },
       success: (res) => {
-        const { success, message } = res.result;
+        const { success, message } = res.result as { success: boolean, message: string };
         
         if (success) {
           Toast({
@@ -273,7 +285,7 @@ Page({
         code
       },
       success: (res) => {
-        const { success, message, openid } = res.result;
+        const { success, message, openid } = res.result as { success: boolean, message: string, openid: string };
         
         if (success) {
           // 验证成功，查询用户信息
@@ -284,7 +296,8 @@ Page({
             if (userRes.data.length > 0) {
               // 用户已存在，更新信息
               const dbUserInfo = userRes.data[0];
-              const userId = dbUserInfo._id;
+              // 添加类型断言，确保 userId 是 string 类型
+              const userId = dbUserInfo._id as string;
               
               // 更新手机号和登录时间
               db.collection('users').doc(userId).update({
@@ -307,7 +320,7 @@ Page({
               });
             } else {
               // 新用户，创建记录
-              const newUser = {
+              const newUser: any = {
                 nickName: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2'),
                 avatarUrl: '',
                 phone: phone,
@@ -326,7 +339,7 @@ Page({
               }).then(res => {
                 // 添加ID并保存到本地
                 newUser._id = res._id;
-                newUser._openid = openid;
+                // _openid 由云数据库自动添加，不需要手动设置
                 wx.setStorageSync('userInfo', newUser);
                 this.loginSuccess();
               }).catch(err => {
@@ -402,7 +415,7 @@ Page({
         password: adminPassword
       },
       success: (res) => {
-        const { success, message, adminInfo } = res.result;
+        const { success, message, adminInfo } = res.result as { success: boolean, message: string, adminInfo: any };
         
         if (success) {
           // 登录成功，保存管理员信息

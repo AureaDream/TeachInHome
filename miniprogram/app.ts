@@ -1,8 +1,9 @@
 // app.ts
+/// <reference path="../typings/index.d.ts" />
 App<IAppOption>({
   globalData: {
     cloudEnvId: 'cloud1-3gqdqvkpbeab224c',
-    userInfo: null,
+    userInfo: undefined,
     isLoggedIn: false
   },
   onLaunch() {

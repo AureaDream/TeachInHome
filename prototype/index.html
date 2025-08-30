@@ -4,7 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>家教接单平台 - 原型展示</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  {
+  "read": "auth != null && auth.openid == resource.data.userId",
+  "write": {
+    "$or": [
+      {
+        // 管理员可以创建和修改所有通知
+        "$expr": "get('database.users.$(auth.openid)').data.role == 'admin'"
+      },
+      {
+        // 系统自动创建的通知
+        "$and": [
+          {"type": "system"},
+          {"source": "auto"}
+        ]
+      },
+      {
+        // 云函数创建的通知（通过特殊标识）
+        "createdBy": "cloudFunction"
+      }
+    ]
+  }
+}  <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/tdesign-icons-view@0.2.1/dist/index.css" rel="stylesheet">
     <style>
         /* iPhone 15 Pro 尺寸: 393x852px */

@@ -51,5 +51,6 @@
     "ignore": [],
     "include": []
   },
-  "appid": "wxadc8ab05511d6029"
+  "appid": "wxadc8ab05511d6029",
+  "cloudfunctionRoot": "cloudfunctions/"
 }
