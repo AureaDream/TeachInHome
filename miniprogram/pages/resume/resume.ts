@@ -16,7 +16,6 @@ interface FormData {
   philosophy: string;
   phone: string;
   wechat: string;
-  qq: string;
 }
 
 Page({
@@ -35,7 +34,6 @@ Page({
       grade: '',
       hometown: '',
       subjects: [],
-      experience: '',
       certificates: '',
       tutorExperience: '',
       skills: '',
