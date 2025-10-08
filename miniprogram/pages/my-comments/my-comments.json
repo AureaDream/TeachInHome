@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "我的评论",
+  "usingComponents": {
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-avatar": "tdesign-miniprogram/avatar/avatar",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-empty": "tdesign-miniprogram/empty/empty",
+    "t-toast": "tdesign-miniprogram/toast/toast"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

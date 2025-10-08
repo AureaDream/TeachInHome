@@ -10,76 +10,96 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const db = cloud.database()
   
-  // 获取密码
-  const { password } = event
+  // 获取登录参数
+  const { username, password } = event
   
-  if (!password) {
+  if (!username || !password) {
     return {
       success: false,
-      message: '密码不能为空'
+      message: '用户名和密码不能为空'
     }
   }
   
   try {
-    // 查询管理员配置
+    // 查询管理员用户
     const adminCollection = db.collection('admin_config')
-    const adminConfig = await adminCollection.where({
-      configType: 'adminPassword'
+    const adminResult = await adminCollection.where({
+      username: username,
+      status: 'active'
     }).get()
     
-    // 如果没有配置记录，使用默认密码
-    const correctPassword = adminConfig.data.length > 0 
-      ? adminConfig.data[0].value 
-      : 'admin123' // 默认密码，实际应用中应该在初始化时设置更复杂的密码
+    if (adminResult.data.length === 0) {
+      return {
+        success: false,
+        message: '管理员账号不存在或已被禁用'
+      }
+    }
     
-    if (password !== correctPassword) {
+    const adminUser = adminResult.data[0]
+    
+    // 验证密码（实际应用中应该使用加密密码）
+    if (adminUser.password !== password) {
       return {
         success: false,
         message: '密码错误'
       }
     }
     
-    // 登录成功，返回管理员信息
+    // 更新最后登录时间
+    await adminCollection.doc(adminUser._id).update({
+      data: {
+        lastLoginTime: new Date()
+      }
+    })
+    
+    // 构建管理员信息
     const adminInfo = {
-      nickName: '管理员',
-      avatarUrl: '',
+      _id: adminUser._id,
+      username: adminUser.username,
+      nickName: adminUser.nickName || '管理员',
+      avatarUrl: adminUser.avatarUrl || '',
       loginType: 'admin',
       isAdmin: true,
-      _openid: wxContext.OPENID,
       role: 'admin',
-      lastLoginTime: new Date()
+      permissions: adminUser.permissions || ['user_manage', 'order_manage', 'forum_manage'],
+      lastLoginTime: new Date(),
+      _openid: wxContext.OPENID
     }
     
-    // 检查管理员用户是否已存在
+    // 同时在users表中创建或更新管理员记录（用于统一用户管理）
     const userCollection = db.collection('users')
-    const adminUser = await userCollection.where({
-      _openid: wxContext.OPENID,
-      role: 'admin'
+    const existingUser = await userCollection.where({
+      _openid: wxContext.OPENID
     }).get()
     
-    if (adminUser.data.length === 0) {
-      // 创建管理员用户记录
-      const result = await userCollection.add({
+    if (existingUser.data.length === 0) {
+      // 创建用户记录
+      await userCollection.add({
         data: {
-          ...adminInfo,
+          nickName: adminInfo.nickName,
+          avatarUrl: adminInfo.avatarUrl,
+          loginType: 'admin',
+          role: 'admin',
+          isAdmin: true,
           createTime: new Date(),
+          lastLoginTime: new Date(),
           phone: '',
           email: '',
-          bio: '',
+          bio: '系统管理员',
           status: 'active'
         }
       })
-      
-      adminInfo._id = result._id
     } else {
-      // 更新管理员登录时间
-      await userCollection.doc(adminUser.data[0]._id).update({
+      // 更新用户记录
+      await userCollection.doc(existingUser.data[0]._id).update({
         data: {
+          nickName: adminInfo.nickName,
+          avatarUrl: adminInfo.avatarUrl,
+          role: 'admin',
+          isAdmin: true,
           lastLoginTime: new Date()
         }
       })
-      
-      adminInfo._id = adminUser.data[0]._id
     }
     
     return {
@@ -92,7 +112,7 @@ exports.main = async (event, context) => {
     return {
       success: false,
       message: '登录失败，请稍后重试',
-      error: err
+      error: err.message
     }
   }
 }

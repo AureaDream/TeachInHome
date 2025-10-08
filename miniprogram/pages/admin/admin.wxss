@@ -19,6 +19,21 @@
   margin-bottom: 20rpx;
 }
 
+/* 发布订单按钮栏 */
+.publish-order-bar {
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.publish-order-bar .t-button {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
 /* 筛选栏 */
 .filter-bar {
   background-color: #fff;
@@ -282,6 +297,35 @@
   padding: 20rpx 0;
 }
 
+/* 发布订单表单样式 */
+.publish-order-form {
+  padding: 20rpx;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.publish-order-form .form-item {
+  margin: 24rpx 0;
+}
+
+.publish-order-form .form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.publish-order-form .t-input,
+.publish-order-form .t-textarea {
+  margin-bottom: 0;
+}
+
+.publish-order-form .t-picker {
+  width: 100%;
+}
+
+/* 通用表单样式 */
 .form-item {
   margin: 30rpx 0;
 }

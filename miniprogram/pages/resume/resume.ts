@@ -8,8 +8,7 @@ interface FormData {
   major: string;
   grade: string;
   hometown: string;
-  subjects: string[];
-  experience: string;
+  subjects: string;
   certificates: string;
   tutorExperience: string;
   skills: string;
@@ -33,20 +32,16 @@ Page({
       major: '',
       grade: '',
       hometown: '',
-      subjects: [],
+      subjects: '',
       certificates: '',
       tutorExperience: '',
       skills: '',
       philosophy: '',
       phone: '',
-      wechat: '',
-      qq: ''
+      wechat: ''
     } as FormData,
     
     // 选项数据
-    subjects: ['语文', '数学', '英语', '物理', '化学', '生物', '历史', '地理', '政治', '音乐', '美术', '体育'],
-    gradeOptions: ['大一', '大二', '大三', '大四', '研一', '研二', '研三', '博士'],
-    experienceOptions: ['无经验', '1年以下', '1-2年', '2-3年', '3年以上']
   },
 
   onLoad() {
@@ -106,7 +101,7 @@ Page({
     this.updateCanPreview();
   },
 
-  // 年级选择
+  // 年级输入
   onGradeChange(e: any) {
     this.setData({
       'formData.grade': e.detail.value
@@ -114,37 +109,24 @@ Page({
     this.updateCanPreview();
   },
 
-  // 经验选择
-  onExperienceChange(e: any) {
-    this.setData({
-      'formData.experience': e.detail.value
-    });
-    this.updateCanPreview();
-  },
-
   // 科目选择
-  onSubjectTap(e: any) {
-    const subject = e.currentTarget.dataset.subject;
-    const subjects = [...this.data.formData.subjects];
-    const index = subjects.indexOf(subject);
-    
-    if (index > -1) {
-      subjects.splice(index, 1);
-    } else {
-      subjects.push(subject);
-    }
-    
-    this.setData({
-      'formData.subjects': subjects
-    });
-    
-    this.updateCanPreview();
-  },
+
 
   // 更新预览状态
   updateCanPreview() {
     const { formData } = this.data;
-    const canPreview = !!(formData.name && formData.gender && formData.school && formData.major && formData.subjects.length > 0 && formData.phone);
+    const canPreview = !!(
+      formData.name && 
+      formData.gender && 
+      formData.school && 
+      formData.major && 
+      formData.grade &&
+      formData.subjects.length > 0 && 
+      formData.tutorExperience &&
+      formData.skills &&
+      formData.phone &&
+      formData.wechat
+    );
     
     this.setData({ canPreview });
   },
@@ -266,25 +248,21 @@ Page({
     text += `年龄：${formData.age}\n`;
     text += `学校：${formData.school}\n`;
     text += `专业：${formData.major}\n`;
-    if (formData.grade) text += `年级：${formData.grade}\n`;
+    text += `年级：${formData.grade}\n`;
     if (formData.hometown) text += `户籍：${formData.hometown}\n`;
     
     text += '\n=== 教学能力 ===\n';
-    text += `擅长科目：${formData.subjects.join('、')}\n`;
-    if (formData.experience) text += `教学经验：${formData.experience}\n`;
+    text += `擅长科目：${formData.subjects}\n`;
     if (formData.certificates) text += `获得证书：${formData.certificates}\n`;
     
-    if (formData.tutorExperience || formData.skills || formData.philosophy) {
-      text += '\n=== 个人经验 ===\n';
-      if (formData.tutorExperience) text += `家教经历：${formData.tutorExperience}\n`;
-      if (formData.skills) text += `个人特长：${formData.skills}\n`;
-      if (formData.philosophy) text += `教学理念：${formData.philosophy}\n`;
-    }
+    text += '\n=== 个人经验 ===\n';
+    text += `家教经历：${formData.tutorExperience}\n`;
+    text += `个人特长：${formData.skills}\n`;
+    if (formData.philosophy) text += `教学理念：${formData.philosophy}\n`;
     
     text += '\n=== 联系方式 ===\n';
     text += `手机号：${formData.phone}\n`;
-    if (formData.wechat) text += `微信号：${formData.wechat}\n`;
-    if (formData.qq) text += `QQ号：${formData.qq}\n`;
+    text += `微信号：${formData.wechat}\n`;
     
     return text;
   },
@@ -333,11 +311,41 @@ Page({
       return false;
     }
     
+    if (!formData.grade) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择年级',
+        theme: 'warning'
+      });
+      return false;
+    }
+    
     if (formData.subjects.length === 0) {
       Toast({
         context: this,
         selector: '#t-toast',
         message: '请选择擅长科目',
+        theme: 'warning'
+      });
+      return false;
+    }
+    
+    if (!formData.tutorExperience) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请填写家教经历',
+        theme: 'warning'
+      });
+      return false;
+    }
+    
+    if (!formData.skills) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请填写个人特长',
         theme: 'warning'
       });
       return false;
@@ -358,6 +366,16 @@ Page({
         context: this,
         selector: '#t-toast',
         message: '请输入正确的手机号',
+        theme: 'warning'
+      });
+      return false;
+    }
+    
+    if (!formData.wechat) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入微信号',
         theme: 'warning'
       });
       return false;

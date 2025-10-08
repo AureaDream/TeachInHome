@@ -95,24 +95,66 @@
   </view>
 </view>
 
-<!-- 管理员密码弹窗 -->
-<t-dialog
-  visible="{{showAdminDialog}}"
-  title="管理员登录"
-  confirm-btn="登录"
-  cancel-btn="取消"
-  bind:confirm="onAdminLogin"
-  bind:cancel="onCloseAdminDialog"
->
-  <view class="admin-dialog">
-    <t-input
-      placeholder="请输入管理员密码"
-      type="password"
-      value="{{adminPassword}}"
-      bind:change="onAdminPasswordChange"
-    />
+<!-- 管理员登录弹窗遮罩 -->
+<view class="admin-modal-mask" wx:if="{{showAdminDialog}}" bind:tap="onCloseAdminDialog">
+  <view class="admin-modal" catch:tap="stopPropagation">
+    <!-- 弹窗标题 -->
+    <view class="admin-modal-header">
+      <text class="admin-modal-title">管理员登录</text>
+      <t-icon name="close" size="40rpx" class="admin-modal-close" bind:tap="onCloseAdminDialog" />
+    </view>
+    
+    <!-- 弹窗内容 -->
+    <view class="admin-modal-content">
+      <view class="admin-input-group">
+        <t-input
+          placeholder="请输入管理员用户名"
+          value="{{adminUsername}}"
+          bind:change="onAdminUsernameChange"
+          class="admin-input"
+          disabled="{{adminLoading}}"
+          prefix-icon="user"
+        />
+      </view>
+      <view class="admin-input-group">
+        <t-input
+          placeholder="请输入管理员密码"
+          type="password"
+          value="{{adminPassword}}"
+          bind:change="onAdminPasswordChange"
+          class="admin-input"
+          disabled="{{adminLoading}}"
+          prefix-icon="lock-on"
+        />
+      </view>
+      <view class="admin-tips">
+        <text class="tips-text">请使用管理员账号登录后台管理系统</text>
+      </view>
+    </view>
+    
+    <!-- 弹窗按钮 -->
+    <view class="admin-modal-footer">
+      <t-button
+        theme="outline"
+        size="medium"
+        bind:tap="onCloseAdminDialog"
+        disabled="{{adminLoading}}"
+        class="admin-cancel-btn"
+      >
+        取消
+      </t-button>
+      <t-button
+        theme="primary"
+        size="medium"
+        bind:tap="onAdminLogin"
+        loading="{{adminLoading}}"
+        class="admin-confirm-btn"
+      >
+        {{adminLoading ? '登录中...' : '登录'}}
+      </t-button>
+    </view>
   </view>
-</t-dialog>
+</view>
 
 <!-- Toast提示 -->
 <t-toast id="t-toast" />

@@ -84,9 +84,88 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* 管理员弹窗 */
-.admin-dialog {
-  padding: 20rpx 0;
+/* 管理员自定义弹窗 */
+.admin-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 16rpx;
+  width: 100%;
+  max-width: 600rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 40rpx 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.admin-modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-modal-close {
+  color: #999;
+  padding: 10rpx;
+}
+
+.admin-modal-content {
+  padding: 40rpx;
+}
+
+.admin-input-group {
+  margin-bottom: 30rpx;
+}
+
+.admin-input-group:last-of-type {
+  margin-bottom: 20rpx;
+}
+
+.admin-input {
+  width: 100%;
+}
+
+.admin-tips {
+  text-align: center;
+  margin-top: 20rpx;
+}
+
+.tips-text {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.4;
+}
+
+.admin-modal-footer {
+  display: flex;
+  padding: 20rpx 40rpx 40rpx;
+  gap: 20rpx;
+}
+
+.admin-cancel-btn {
+  flex: 1;
+}
+
+.admin-confirm-btn {
+  flex: 1;
 }
 
 /* TDesign组件样式覆盖 */

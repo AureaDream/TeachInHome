@@ -1,0 +1,81 @@
+<view class="my-orders-container">
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <t-loading theme="circular" size="48rpx" text="加载中..." />
+  </view>
+
+  <!-- 订单列表 -->
+  <view wx:else class="orders-list">
+    <!-- 空状态 -->
+    <view wx:if="{{orders.length === 0}}" class="empty-container">
+      <t-empty 
+        icon="order" 
+        description="{{orderType === 'published' ? '暂无发布的订单' : orderType === 'accepted' ? '暂无接受的订单' : '暂无收藏的订单'}}"
+      />
+    </view>
+
+    <!-- 订单卡片列表 -->
+    <view wx:else>
+      <view 
+        wx:for="{{orders}}" 
+        wx:key="_id" 
+        class="order-card"
+        bindtap="onOrderTap"
+        data-id="{{item._id}}"
+      >
+        <!-- 订单头部 -->
+        <view class="order-header">
+          <view class="order-info">
+            <view class="order-title">{{item.title}}</view>
+            <view class="order-subtitle">{{item.subject}} · {{item.grade}}</view>
+          </view>
+          <view class="order-time">{{item.createTime}}</view>
+        </view>
+
+        <!-- 订单状态 -->
+        <view class="order-status">
+          <t-tag 
+            theme="{{getStatusColor(item.status)}}" 
+            variant="light" 
+            size="small"
+          >
+            {{getStatusText(item.status)}}
+          </t-tag>
+        </view>
+
+        <!-- 订单内容 -->
+        <view class="order-content">
+          <view class="order-description">{{item.description}}</view>
+          <view wx:if="{{item.requirements}}" class="order-requirements">
+            <text class="label">要求：</text>{{item.requirements}}
+          </view>
+          <view class="order-location">
+            <t-icon name="location" size="28rpx" color="#666" />
+            <text>{{item.location}}</text>
+          </view>
+          <view wx:if="{{item.contactInfo}}" class="order-contact">
+            <text class="label">联系方式：</text>{{item.contactInfo}}
+          </view>
+        </view>
+
+        <!-- 订单底部 -->
+        <view class="order-footer">
+          <view class="order-stats">
+            <view class="stat-item">
+              <t-icon name="browse" size="28rpx" color="#999" />
+              <text>{{item.viewCount || 0}}</text>
+            </view>
+            <view class="stat-item">
+              <t-icon name="user" size="28rpx" color="#999" />
+              <text>{{item.applicantCount || 0}}人申请</text>
+            </view>
+          </view>
+          <view class="order-price">
+            <text class="price-value">¥{{item.price}}</text>
+            <text class="price-unit">/小时</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

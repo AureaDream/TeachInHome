@@ -1,0 +1,98 @@
+<view class="my-comments-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">我的评论</text>
+    <text class="comment-count">共 {{comments.length}} 条</text>
+  </view>
+  
+  <!-- 加载状态 -->
+  <t-loading wx:if="{{loading}}" theme="circular" size="40rpx" text="加载中..." />
+  
+  <!-- 评论列表 -->
+  <view wx:if="{{!loading}}" class="comments-list">
+    <view 
+      wx:for="{{comments}}" 
+      wx:key="id" 
+      class="comment-item"
+      bindtap="onCommentTap"
+      data-comment="{{item}}"
+    >
+      <!-- 评论头部 -->
+      <view class="comment-header">
+        <view class="author-info">
+          <t-avatar src="{{item.author.avatar}}" size="60rpx" />
+          <view class="author-details">
+            <text class="author-name">{{item.author.name}}</text>
+            <text class="comment-time">{{item.createTime}}</text>
+          </view>
+        </view>
+        <view class="comment-stats">
+          <view class="stat-item">
+            <t-icon name="thumb-up" size="24rpx" />
+            <text>{{item.likeCount}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 关联帖子信息 -->
+      <view class="post-info">
+        <text class="post-label">回复帖子：</text>
+        <text class="post-title">{{item.postTitle}}</text>
+      </view>
+      
+      <!-- 评论内容 -->
+      <view class="comment-content">
+        <text>{{item.content}}</text>
+      </view>
+      
+      <!-- 操作按钮 -->
+      <view class="comment-actions">
+        <view class="action-item" catchtap="onJumpToPost" data-comment="{{item}}">
+          <t-icon name="jump" size="20rpx" color="#0052d9" />
+          <text class="action-text">跳转</text>
+        </view>
+        
+        <view class="action-item" catchtap="onDeleteComment" data-comment="{{item}}">
+          <t-icon name="delete" size="20rpx" color="#e34d59" />
+          <text class="action-text">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 空状态 -->
+  <view wx:if="{{comments.length === 0 && !loading}}" class="empty-state">
+    <t-empty 
+      icon="chat" 
+      description="还没有发表过评论"
+    >
+      <t-button 
+        theme="primary" 
+        size="small"
+        bindtap="onGoToForum"
+      >
+        去评论
+      </t-button>
+    </t-empty>
+  </view>
+  
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore && comments.length > 0}}" class="load-more">
+    <t-button 
+      theme="default" 
+      variant="text" 
+      size="small"
+      loading="{{loadingMore}}"
+      bindtap="loadMore"
+    >
+      {{loadingMore ? '加载中...' : '加载更多'}}
+    </t-button>
+  </view>
+  
+  <view wx:if="{{!hasMore && comments.length > 0}}" class="no-more">
+    <text>没有更多评论了</text>
+  </view>
+</view>
+
+<!-- Toast 组件 -->
+<t-toast id="t-toast" />

@@ -5,8 +5,15 @@
     "pages/resume/resume",
     "pages/forum/forum",
     "pages/profile/profile",
+    "pages/notifications/notifications",
     "pages/order-detail/order-detail",
-    "pages/admin/admin"
+    "pages/post-detail/post-detail",
+    "pages/my-posts/my-posts",
+    "pages/my-comments/my-comments",
+    "pages/admin/admin",
+    "pages/my-orders/my-orders",
+    "pages/index/index",
+    "pages/logs/logs"
   ],
   "window": {
     "navigationBarTitleText": "家教接单平台",

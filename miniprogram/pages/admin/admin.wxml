@@ -92,6 +92,14 @@
 
   <!-- 订单管理 -->
   <block wx:if="{{activeTab === 'orders'}}">
+    <!-- 发布订单按钮 -->
+    <view class="publish-order-bar">
+      <t-button theme="primary" size="medium" bind:tap="onPublishOrder">
+        <t-icon name="add" size="32rpx" />
+        发布订单
+      </t-button>
+    </view>
+    
     <!-- 订单筛选 -->
     <view class="filter-bar">
       <t-dropdown-menu>
@@ -327,6 +335,163 @@
   >
     <view class="dialog-content">
       <t-input label="用户ID" placeholder="请输入用户ID" value="{{addAdminForm.userId}}" bind:change="onAddAdminFormChange" data-field="userId" />
+    </view>
+  </t-dialog>
+
+  <!-- 订单发布弹窗 -->
+  <t-dialog
+    visible="{{showPublishOrderDialog}}"
+    title="发布订单"
+    confirm-btn="{{ publishingOrder ? '发布中...' : '发布' }}"
+    cancel-btn="取消"
+    bind:confirm="onConfirmPublishOrder"
+    bind:cancel="onCancelPublishOrder"
+    confirm-btn-loading="{{publishingOrder}}"
+  >
+    <view class="publish-order-form">
+      <view class="form-item">
+        <text class="form-label">订单编号</text>
+        <t-input
+          value="{{publishOrderForm.orderNumber}}"
+          placeholder="请输入订单编号"
+          data-field="orderNumber"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">订单标题</text>
+        <t-input
+          value="{{publishOrderForm.title}}"
+          placeholder="请输入订单标题"
+          data-field="title"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">科目</text>
+        <t-picker
+          value="{{publishOrderSubjectValue}}"
+          options="{{publishOrderSubjectOptions}}"
+          bind:change="onPublishOrderSubjectChange"
+        >
+          <t-input
+            slot="trigger"
+            readonly
+            value="{{publishOrderForm.subject}}"
+            placeholder="请选择科目"
+            suffix-icon="chevron-down"
+          />
+        </t-picker>
+      </view>
+      <view class="form-item">
+          <text class="form-label">年级</text>
+          <t-picker
+            value="{{publishOrderGradeValue}}"
+            options="{{publishOrderGradeOptions}}"
+            bind:change="onPublishOrderGradeChange"
+          >
+            <t-input
+              slot="trigger"
+              readonly
+              value="{{publishOrderForm.grade}}"
+              placeholder="请选择年级"
+              suffix-icon="chevron-down"
+            />
+          </t-picker>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">学生性别</text>
+          <t-picker
+            value="{{publishOrderGenderValue}}"
+            options="{{publishOrderGenderOptions}}"
+            bind:change="onPublishOrderGenderChange"
+          >
+            <t-input
+              slot="trigger"
+              readonly
+              value="{{publishOrderForm.studentGender}}"
+              placeholder="请选择学生性别"
+              suffix-icon="chevron-down"
+            />
+          </t-picker>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">老师要求</text>
+          <t-textarea
+            value="{{publishOrderForm.teacherRequirements}}"
+            placeholder="请输入对老师的具体要求"
+            data-field="teacherRequirements"
+            bind:change="onPublishOrderFormChange"
+            maxlength="200"
+          />
+        </view>
+      
+        <view class="form-item">
+          <text class="form-label">地址</text>
+          <t-input
+            value="{{publishOrderForm.location}}"
+            placeholder="请输入上课地点"
+            data-field="location"
+            bind:change="onPublishOrderFormChange"
+          />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">薪资范围</text>
+          <t-input
+            value="{{publishOrderForm.salaryRange}}"
+            placeholder="请输入薪资范围，如：100-150元/小时"
+            data-field="salaryRange"
+            bind:change="onPublishOrderFormChange"
+          />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">报酬(元/小时)</text>
+          <t-input
+            value="{{publishOrderForm.price}}"
+            placeholder="请输入具体报酬"
+            type="number"
+            data-field="price"
+            bind:change="onPublishOrderFormChange"
+          />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">订单描述</text>
+          <t-textarea
+            value="{{publishOrderForm.description}}"
+            placeholder="请输入订单描述"
+            data-field="description"
+            bind:change="onPublishOrderFormChange"
+            maxlength="500"
+          />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">具体要求</text>
+          <t-textarea
+            value="{{publishOrderForm.requirements}}"
+            placeholder="请输入具体要求"
+            data-field="requirements"
+            bind:change="onPublishOrderFormChange"
+            maxlength="300"
+          />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">联系方式</text>
+          <t-input
+            value="{{publishOrderForm.contactInfo}}"
+            placeholder="请输入联系方式"
+            data-field="contactInfo"
+            bind:change="onPublishOrderFormChange"
+          />
+        </view>
     </view>
   </t-dialog>
 

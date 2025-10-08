@@ -132,6 +132,7 @@ declare namespace ICloud {
     type CallFunctionData = AnyObject
 
     interface CallFunctionResult extends IAPISuccessParam {
+        message: string
         result: AnyObject | string | undefined
     }
 

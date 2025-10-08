@@ -1,20 +1,23 @@
 import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
 
 interface Order {
-  id: string;
+  [x: string]: any;
+  _id: string;
+  title: string;
   subject: string;
   grade: string;
   location: string;
-  distance: string;
-  timeRequirement: string;
-  studentInfo: string;
+  description: string;
   requirements?: string;
-  salary: number;
-  salaryUnit: string;
-  status: 'available' | 'taken';
-  statusText: string;
-  publishTime: string;
-  collected: boolean;
+  price: number;
+  status: 'active' | 'completed' | 'cancelled' | 'taken';
+  publisherId: string;
+  createTime: Date;
+  updateTime: Date;
+  viewCount: number;
+  applicantCount: number;
+  contactInfo?: string;
+  collected?: boolean;
 }
 
 Page({
@@ -185,16 +188,16 @@ Page({
 
   // 订单操作
   onOrderTap(e: any) {
-    const order = e.currentTarget.dataset.order;
+    const orderId = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/pages/order-detail/order-detail?id=${order.id}`
+      url: `/pages/order-detail/order-detail?id=${orderId}`
     });
   },
 
   onCollectOrder(e: any) {
     const id = e.currentTarget.dataset.id;
     const orders = this.data.orders.map(order => {
-      if (order.id === id) {
+      if (order._id === id) {
         order.collected = !order.collected;
       }
       return order;
@@ -205,14 +208,14 @@ Page({
     Toast({
       context: this,
       selector: '#t-toast',
-      message: orders.find(o => o.id === id)?.collected ? '收藏成功' : '取消收藏',
+      message: orders.find(o => o._id === id)?.collected ? '收藏成功' : '取消收藏',
       theme: 'success'
     });
   },
 
   onTakeOrder(e: any) {
     const id = e.currentTarget.dataset.id;
-    const order = this.data.orders.find(o => o.id === id);
+    const order = this.data.orders.find(o => o._id === id);
     
     if (!order) return;
     
@@ -231,9 +234,8 @@ Page({
           
           // 更新订单状态
           const orders = this.data.orders.map(o => {
-            if (o.id === id) {
+            if (o._id === id) {
               o.status = 'taken';
-              o.statusText = '已接单';
             }
             return o;
           });
@@ -254,24 +256,70 @@ Page({
     this.loadOrders();
   },
 
-  loadOrders() {
+  async loadOrders() {
     if (this.data.loading) return;
     
     this.setData({ loading: true });
     
-    // 模拟API请求
-    setTimeout(() => {
-      const mockOrders = this.generateMockOrders();
-      const filteredOrders = this.filterOrders(mockOrders);
+    try {
+      const db = wx.cloud.database();
+      const pageSize = 20;
       
-      this.setData({
-        orders: this.data.page === 1 ? filteredOrders : [...this.data.orders, ...filteredOrders],
-        loading: false,
-        hasMore: filteredOrders.length === 10
+      // 构建查询条件
+      let query = db.collection('orders').where({
+        status: 'active' // 只显示活跃的订单
       });
       
-      wx.stopPullDownRefresh();
-    }, 1000);
+      // 添加搜索条件
+      if (this.data.searchValue) {
+        query = query.where({
+          title: db.RegExp({
+            regexp: this.data.searchValue,
+            options: 'i'
+          })
+        });
+      }
+      
+      // 添加科目筛选
+      if (this.data.selectedSubject) {
+        query = query.where({
+          subject: this.data.selectedSubject
+        });
+      }
+      
+      // 获取订单数据
+      const result = await query
+        .orderBy('createTime', 'desc')
+        .skip((this.data.page - 1) * pageSize)
+        .limit(pageSize)
+        .get();
+      
+      console.log('订单查询结果:', result);
+      
+      const orders = result.data.map((order: any) => ({
+        ...order,
+        collected: false // 默认未收藏，后续可以从用户收藏列表中获取
+      }));
+      
+      this.setData({
+        orders: this.data.page === 1 ? orders : [...this.data.orders, ...orders],
+        loading: false,
+        hasMore: orders.length === pageSize
+      });
+      
+    } catch (error) {
+      console.error('加载订单失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '加载订单失败，请重试',
+        theme: 'error'
+      });
+      
+      this.setData({ loading: false });
+    }
+    
+    wx.stopPullDownRefresh();
   },
 
   loadMore() {
@@ -285,81 +333,7 @@ Page({
     this.loadMore();
   },
 
-  // 生成模拟数据
-  generateMockOrders(): Order[] {
-    const subjects = ['语文', '数学', '英语', '物理', '化学'];
-    const grades = ['小学三年级', '初中二年级', '高中一年级', '大学一年级'];
-    const locations = ['福州市鼓楼区', '福州市台江区', '福州市仓山区', '福州市晋安区'];
-    const distances = ['1.2km', '2.5km', '3.8km', '5.1km'];
-    
-    return Array.from({ length: 10 }, (_, index) => ({
-      id: `order_${Date.now()}_${index}`,
-      subject: subjects[Math.floor(Math.random() * subjects.length)],
-      grade: grades[Math.floor(Math.random() * grades.length)],
-      location: locations[Math.floor(Math.random() * locations.length)],
-      distance: distances[Math.floor(Math.random() * distances.length)],
-      timeRequirement: '每周2次，每次2小时',
-      studentInfo: '男生，基础较好，需要提升成绩',
-      requirements: '有耐心，有经验优先',
-      salary: Math.floor(Math.random() * 200) + 50,
-      salaryUnit: '小时',
-      status: Math.random() > 0.7 ? 'taken' : 'available',
-      statusText: Math.random() > 0.7 ? '已接单' : '可接单',
-      publishTime: this.formatTime(new Date(Date.now() - Math.random() * 86400000 * 7)),
-      collected: Math.random() > 0.8
-    }));
-  },
 
-  // 筛选订单
-  filterOrders(orders: Order[]): Order[] {
-    const { activeTab, searchValue, selectedSubject, selectedDistance, selectedSalary } = this.data;
-    
-    return orders.filter(order => {
-      // 按标签筛选
-      if (activeTab !== 'all') {
-        const gradeMap: { [key: string]: string } = {
-          'primary': '小学',
-          'middle': '初中',
-          'high': '高中',
-          'university': '大学'
-        };
-        if (!order.grade.includes(gradeMap[activeTab])) {
-          return false;
-        }
-      }
-      
-      // 按搜索词筛选
-      if (searchValue && !order.subject.includes(searchValue) && !order.location.includes(searchValue)) {
-        return false;
-      }
-      
-      // 按学科筛选
-      if (selectedSubject && order.subject !== selectedSubject) {
-        return false;
-      }
-      
-      // 按距离筛选
-      if (selectedDistance && selectedDistance !== '不限') {
-        const distanceNum = parseFloat(order.distance);
-        const filterNum = parseInt(selectedDistance);
-        if (distanceNum > filterNum) {
-          return false;
-        }
-      }
-      
-      // 按报酬筛选
-      if (selectedSalary) {
-        const salary = order.salary;
-        if (selectedSalary === '50元以下' && salary >= 50) return false;
-        if (selectedSalary === '50-100元' && (salary < 50 || salary > 100)) return false;
-        if (selectedSalary === '100-200元' && (salary < 100 || salary > 200)) return false;
-        if (selectedSalary === '200-300元' && (salary < 200 || salary > 300)) return false;
-        if (selectedSalary === '300元以上' && salary < 300) return false;
-      }
-      
-      return true;
-    });
-  },
 
   // 格式化时间
   formatTime(date: Date): string {

@@ -218,6 +218,64 @@
   font-weight: bold;
 }
 
+/* 分类选择器 */
+.category-selector {
+  width: 90%;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.picker-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 20rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.selected-category {
+  color: #333;
+  font-weight: 500;
+}
+
+.placeholder-text {
+  color: #999;
+}
+
+.arrow {
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 表单输入框 */
+.form-input {
+  width: 90%;
+  min-height: 60rpx;
+  padding: 24rpx 20rpx;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  border: none;
+  font-size: 28rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  width: 90%;
+  min-height: 120rpx;
+  padding: 24rpx 20rpx;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  border: none;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
 /* 图片上传 */
 .image-upload {
   display: flex;
@@ -250,6 +308,13 @@
   align-items: center;
 }
 
+.delete-text {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+
 .upload-btn {
   width: 120rpx;
   height: 120rpx;
@@ -260,6 +325,12 @@
   justify-content: center;
   align-items: center;
   gap: 8rpx;
+}
+
+.upload-icon {
+  font-size: 48rpx;
+  color: #999;
+  line-height: 1;
 }
 
 .upload-text {
@@ -300,9 +371,97 @@
   padding: 20rpx 0;
 }
 
-.t-dialog__content {
+/* 自定义弹窗样式 */
+.custom-dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.custom-dialog {
+  background: #fff;
+  border-radius: 16rpx;
+  width: 100%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 0 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.dialog-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.dialog-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f8f8f8;
+}
+
+.close-icon {
+  font-size: 32rpx;
+  color: #666;
+  line-height: 1;
+}
+
+.dialog-content {
+  flex: 1;
+  padding: 32rpx;
   max-height: 60vh;
-  overflow-y: auto;
+}
+
+.dialog-footer {
+  display: flex;
+  border-top: 1rpx solid #f0f0f0;
+  margin-top: 0;
+}
+
+.dialog-btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  color: #666;
+  border-right: 1rpx solid #f0f0f0;
+}
+
+.confirm-btn {
+  color: #0052d9;
+  font-weight: bold;
+}
+
+.dialog-btn:active {
+  background: #f8f8f8;
 }
 
 /* 响应式适配 */

@@ -3,7 +3,7 @@
   <view class="user-card">
     <view class="user-info">
       <view class="avatar-container">
-        <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.png'}}" mode="aspectFill" />
+        <image class="avatar" src="{{userInfo.avatarUrl || '/images/avatar-default.svg'}}" mode="aspectFill" />
         <view class="edit-avatar-btn" bindtap="onEditAvatar">
           <t-icon name="edit" size="32rpx" color="#fff" />
         </view>
@@ -36,20 +36,11 @@
   <!-- 功能菜单 -->
   <view class="menu-section">
     <t-cell-group title="我的订单">
-      <t-cell title="我发布的订单" hover arrow url="/pages/my-orders/my-orders?type=published">
-        <t-icon name="file-icon" slot="left-icon" size="48rpx" color="#0052d9" />
-      </t-cell>
       <t-cell title="我接受的订单" hover arrow url="/pages/my-orders/my-orders?type=accepted">
         <t-icon name="check-circle" slot="left-icon" size="48rpx" color="#0052d9" />
       </t-cell>
       <t-cell title="我收藏的订单" hover arrow url="/pages/my-orders/my-orders?type=favorite">
         <t-icon name="heart" slot="left-icon" size="48rpx" color="#0052d9" />
-      </t-cell>
-    </t-cell-group>
-
-    <t-cell-group title="我的简历">
-      <t-cell title="查看我的简历" hover arrow url="/pages/resume/resume">
-        <t-icon name="user" slot="left-icon" size="48rpx" color="#0052d9" />
       </t-cell>
     </t-cell-group>
 
@@ -244,11 +235,11 @@
     confirm-btn="确定"
     bind:confirm="onCloseAboutDialog"
   >
-    <view class="about-content">
+    <view class="about-content" slot="content">
       <image class="about-logo" src="/images/logo.png" mode="aspectFit" />
-      <text class="about-title">家教小程序</text>
+      <text class="about-title">家里教小程序</text>
       <text class="about-version">版本号: 1.0.0</text>
-      <text class="about-desc">本应用致力于为学生和家教提供便捷的对接平台，帮助学生找到合适的家教，帮助家教找到合适的学生。</text>
+      <text class="about-desc">本应用致力于为学生和家教提供便捷的对接平台，帮助老师互相交流沟通，帮助家教找到合适的学生。</text>
       <view class="about-links">
         <text class="link" bind:tap="onOpenUserAgreement">用户协议</text>
         <text class="link-divider">|</text>

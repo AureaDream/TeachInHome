@@ -62,6 +62,21 @@ interface PasswordForm {
   confirmPassword: string;
 }
 
+interface PublishOrderForm {
+  orderNumber: string;
+  title: string;
+  subject: string;
+  grade: string;
+  studentGender: string;
+  teacherRequirements: string;
+  location: string;
+  salaryRange: string;
+  price: number;
+  description: string;
+  requirements: string;
+  contactInfo: string;
+}
+
 interface SystemSettings {
   enableRegister: boolean;
   enableOrderPublish: boolean;
@@ -183,7 +198,52 @@ Page({
       oldPassword: '',
       newPassword: '',
       confirmPassword: ''
-    } as PasswordForm
+    } as PasswordForm,
+
+    // 订单发布相关
+    showPublishOrderDialog: false,
+    publishOrderForm: {
+      orderNumber: '',
+      title: '',
+      subject: '数学',
+      grade: '小学',
+      studentGender: '不限',
+      teacherRequirements: '',
+      location: '',
+      salaryRange: '',
+      price: 0,
+      description: '',
+      requirements: '',
+      contactInfo: ''
+    } as PublishOrderForm,
+    publishOrderSubjectValue: [0],
+    publishOrderGradeValue: [0],
+    publishOrderGenderValue: [0],
+    publishingOrder: false,
+    
+    // 发布订单表单选项
+    publishOrderSubjectOptions: [
+      { label: '数学', value: '数学' },
+      { label: '英语', value: '英语' },
+      { label: '语文', value: '语文' },
+      { label: '物理', value: '物理' },
+      { label: '化学', value: '化学' },
+      { label: '生物', value: '生物' },
+      { label: '历史', value: '历史' },
+      { label: '地理', value: '地理' },
+      { label: '政治', value: '政治' }
+    ],
+    publishOrderGradeOptions: [
+      { label: '小学', value: '小学' },
+      { label: '初中', value: '初中' },
+      { label: '高中', value: '高中' },
+      { label: '大学', value: '大学' }
+    ],
+    publishOrderGenderOptions: [
+      { label: '不限', value: '不限' },
+      { label: '男', value: '男' },
+      { label: '女', value: '女' }
+    ]
   },
 
   onLoad() {
@@ -762,7 +822,10 @@ Page({
   },
 
   onTogglePostStatus(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const postId = e.currentTarget.dataset.id;
     const status = e.currentTarget.dataset.status as 'normal' | 'blocked';
     const newStatus = status === 'normal' ? 'blocked' : 'normal';
@@ -794,7 +857,10 @@ Page({
   },
 
   onDeletePost(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const postId = e.currentTarget.dataset.id;
     
     wx.showModal({
@@ -973,6 +1039,199 @@ Page({
 
   onCancelChangePassword() {
     this.setData({ showChangePasswordDialog: false });
+  },
+
+  // 订单发布相关方法
+  onPublishOrder() {
+    this.setData({
+      showPublishOrderDialog: true,
+      publishOrderForm: {
+        orderNumber: '',
+        title: '',
+        subject: '数学',
+        grade: '小学',
+        studentGender: '不限',
+        teacherRequirements: '',
+        location: '',
+        salaryRange: '',
+        price: 0,
+        description: '',
+        requirements: '',
+        contactInfo: ''
+      },
+      publishOrderSubjectValue: [0],
+      publishOrderGradeValue: [0],
+      publishOrderGenderValue: [0]
+    });
+  },
+
+  onPublishOrderFormChange(e: any) {
+    const { field } = e.currentTarget.dataset;
+    const { value } = e.detail;
+    this.setData({
+      [`publishOrderForm.${field}`]: value
+    });
+  },
+
+  onPublishOrderSubjectChange(e: any) {
+    const selectedIndex = e.detail.value[0];
+    const selectedOption = this.data.publishOrderSubjectOptions[selectedIndex];
+    this.setData({
+      'publishOrderForm.subject': selectedOption.value,
+      publishOrderSubjectValue: e.detail.value
+    });
+  },
+
+  onPublishOrderGradeChange(e: any) {
+    const selectedIndex = e.detail.value[0];
+    const selectedOption = this.data.publishOrderGradeOptions[selectedIndex];
+    this.setData({
+      'publishOrderForm.grade': selectedOption.value,
+      publishOrderGradeValue: e.detail.value
+    });
+  },
+
+  onPublishOrderGenderChange(e: any) {
+    const selectedIndex = e.detail.value[0];
+    const selectedOption = this.data.publishOrderGenderOptions[selectedIndex];
+    this.setData({
+      'publishOrderForm.studentGender': selectedOption.value,
+      publishOrderGenderValue: e.detail.value
+    });
+  },
+
+  async onConfirmPublishOrder() {
+    const form = this.data.publishOrderForm;
+    
+    // 表单验证
+    if (!form.orderNumber.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入订单编号',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (!form.title.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入订单标题',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (!form.location.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入上课地点',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (!form.salaryRange.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入薪资范围',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (!form.description.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入订单描述',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (form.price <= 0) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入正确的报酬金额',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    this.setData({ publishingOrder: true });
+    
+    try {
+      // 调用云函数发布订单
+      const result = await wx.cloud.callFunction({
+        name: 'publishOrder',
+        data: {
+          orderNumber: form.orderNumber.trim(),
+          title: form.title.trim(),
+          subject: form.subject,
+          grade: form.grade,
+          studentGender: form.studentGender,
+          teacherRequirements: form.teacherRequirements.trim(),
+          location: form.location.trim(),
+          salaryRange: form.salaryRange.trim(),
+          price: form.price,
+          description: form.description.trim(),
+          requirements: form.requirements.trim(),
+          contactInfo: form.contactInfo.trim()
+        }
+      });
+      
+      console.log('发布订单结果:', result);
+      
+      // 检查云函数调用是否成功以及返回结果
+      if (result.result && typeof result.result === 'object' && (result.result as any).success) {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '订单发布成功',
+          theme: 'success'
+        });
+        
+        this.setData({ 
+          showPublishOrderDialog: false,
+          publishingOrder: false
+        });
+        
+        // 刷新订单列表
+        this.resetOrderList();
+        this.loadOrderList();
+      } else {
+        const errorMessage = (result.result && typeof result.result === 'object' ? (result.result as any).message : null) || result.errMsg || '发布订单失败';
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: errorMessage,
+          theme: 'error'
+        });
+        this.setData({ publishingOrder: false });
+      }
+    } catch (error) {
+      console.error('发布订单失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '发布订单失败，请重试',
+        theme: 'error'
+      });
+      this.setData({ publishingOrder: false });
+    }
+  },
+
+  onCancelPublishOrder() {
+    this.setData({ 
+      showPublishOrderDialog: false,
+      publishingOrder: false
+    });
   },
 
   onLogout() {

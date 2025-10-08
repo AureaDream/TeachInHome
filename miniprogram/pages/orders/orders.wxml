@@ -61,22 +61,23 @@
       <view 
         class="order-card" 
         wx:for="{{orders}}" 
-        wx:key="id"
+        wx:key="_id"
         bind:tap="onOrderTap"
-        data-order="{{item}}"
+        data-id="{{item._id}}"
       >
         <!-- 订单头部 -->
         <view class="order-header">
           <view class="order-info">
-            <view class="order-title">{{item.subject}} - {{item.grade}}</view>
-            <view class="order-time">{{item.publishTime}}</view>
+            <view class="order-title">{{item.title}}</view>
+            <view class="order-subtitle">{{item.subject}} - {{item.grade}}</view>
+            <view class="order-time">{{item.createTime}}</view>
           </view>
           <view class="order-status">
             <t-tag 
-              theme="{{item.status === 'available' ? 'success' : 'warning'}}"
+              theme="{{item.status === 'active' ? 'success' : 'warning'}}"
               variant="light"
             >
-              {{item.statusText}}
+              {{item.status === 'active' ? '可接单' : '已完成'}}
             </t-tag>
           </view>
         </view>
@@ -86,30 +87,29 @@
           <view class="content-row">
             <t-icon name="location" size="28rpx" color="#666" />
             <text class="content-text">{{item.location}}</text>
-            <text class="distance">距离{{item.distance}}</text>
           </view>
           
           <view class="content-row">
-            <t-icon name="time" size="28rpx" color="#666" />
-            <text class="content-text">{{item.timeRequirement}}</text>
-          </view>
-          
-          <view class="content-row">
-            <t-icon name="user" size="28rpx" color="#666" />
-            <text class="content-text">{{item.studentInfo}}</text>
+            <t-icon name="bulletpoint" size="28rpx" color="#666" />
+            <text class="content-text">{{item.description}}</text>
           </view>
           
           <view class="content-row" wx:if="{{item.requirements}}">
-            <t-icon name="bulletpoint" size="28rpx" color="#666" />
+            <t-icon name="edit" size="28rpx" color="#666" />
             <text class="content-text">{{item.requirements}}</text>
+          </view>
+          
+          <view class="content-row" wx:if="{{item.contactInfo}}">
+            <t-icon name="call" size="28rpx" color="#666" />
+            <text class="content-text">{{item.contactInfo}}</text>
           </view>
         </view>
 
         <!-- 订单底部 -->
         <view class="order-footer">
           <view class="salary">
-            <text class="salary-amount">¥{{item.salary}}</text>
-            <text class="salary-unit">/{{item.salaryUnit}}</text>
+            <text class="salary-amount">¥{{item.price}}</text>
+            <text class="salary-unit">/小时</text>
           </view>
           
           <view class="order-actions">
@@ -117,7 +117,7 @@
               size="small" 
               theme="outline" 
               bind:tap="onCollectOrder"
-              data-id="{{item.id}}"
+              data-id="{{item._id}}"
               catch:tap="true"
             >
               {{item.collected ? '已收藏' : '收藏'}}
@@ -127,7 +127,7 @@
               size="small" 
               theme="primary" 
               bind:tap="onTakeOrder"
-              data-id="{{item.id}}"
+              data-id="{{item._id}}"
               catch:tap="true"
             >
               立即接单

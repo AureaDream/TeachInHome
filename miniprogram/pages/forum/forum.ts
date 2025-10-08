@@ -49,6 +49,9 @@ Page({
       images: []
     } as NewPost,
     
+    // picker 选中的索引
+    selectedCategoryIndex: [0],
+    
     // 分类选项
     categoryOptions: [
       { label: '求助', value: 'help' },
@@ -64,6 +67,18 @@ Page({
   },
 
   onShow() {
+    // 同步登录状态到全局数据
+    const userInfo = wx.getStorageSync('userInfo');
+    const app = getApp<IAppOption>();
+    
+    if (userInfo && !app.globalData.userInfo) {
+      app.globalData.userInfo = userInfo;
+      app.globalData.isLoggedIn = true;
+    } else if (!userInfo && app.globalData.userInfo) {
+      app.globalData.userInfo = undefined;
+      app.globalData.isLoggedIn = false;
+    }
+    
     // 刷新帖子列表
     this.refreshPosts();
   },
@@ -147,97 +162,65 @@ Page({
       this.setData({ loading: true });
     }
     
-    // 模拟API请求
-    setTimeout(() => {
-      const mockPosts = this.generateMockPosts();
-      const filteredPosts = this.filterPosts(mockPosts);
-      
-      if (reset) {
+    // 调用云函数获取帖子列表
+    wx.cloud.callFunction({
+      name: 'getPosts',
+      data: {
+        page: this.data.page,
+        pageSize: this.data.pageSize,
+        category: this.data.activeCategory,
+        searchValue: this.data.searchValue
+      },
+      success: (res: any) => {
+        if (res.result && typeof res.result === 'object' && (res.result as any).success) {
+          const { posts, hasMore } = (res.result as any).data;
+          
+          if (reset) {
+            this.setData({
+              posts: posts,
+              loading: false,
+              refreshing: false,
+              hasMore: hasMore
+            });
+          } else {
+            this.setData({
+              posts: [...this.data.posts, ...posts],
+              loadingMore: false,
+              hasMore: hasMore
+            });
+          }
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: res.result.message || '加载失败',
+            theme: 'error'
+          });
+        }
+        
+        wx.stopPullDownRefresh();
+      },
+      fail: (err) => {
+        console.error('获取帖子列表失败:', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '网络错误，请重试',
+          theme: 'error'
+        });
+        
         this.setData({
-          posts: filteredPosts,
           loading: false,
           refreshing: false,
-          hasMore: filteredPosts.length >= this.data.pageSize
+          loadingMore: false
         });
-      } else {
-        this.setData({
-          posts: [...this.data.posts, ...filteredPosts],
-          loadingMore: false,
-          hasMore: filteredPosts.length >= this.data.pageSize
-        });
+        
+        wx.stopPullDownRefresh();
       }
-      
-      wx.stopPullDownRefresh();
-    }, 1000);
+    });
   },
 
-  // 筛选帖子
-  filterPosts(posts: Post[]): Post[] {
-    let filtered = posts;
-    
-    // 按分类筛选
-    if (this.data.activeCategory !== 'all') {
-      filtered = filtered.filter(post => post.category === this.data.activeCategory);
-    }
-    
-    // 按搜索词筛选
-    if (this.data.searchValue) {
-      const keyword = this.data.searchValue.toLowerCase();
-      filtered = filtered.filter(post => 
-        post.title.toLowerCase().indexOf(keyword) !== -1 ||
-        post.content.toLowerCase().indexOf(keyword) !== -1
-      );
-    }
-    
-    return filtered;
-  },
 
-  // 生成模拟数据
-  generateMockPosts(): Post[] {
-    const categories = ['help', 'share', 'discuss', 'resource'];
-    const titles = [
-      '求助：高中数学函数题解题思路',
-      '分享：我的英语学习方法',
-      '讨论：如何提高学生的学习兴趣',
-      '资源：初中物理实验视频合集',
-      '求助：小学语文作文指导技巧',
-      '分享：在线教学工具推荐',
-      '讨论：家教过程中遇到的问题',
-      '资源：高考数学真题解析'
-    ];
-    
-    const posts: Post[] = [];
-    const startIndex = (this.data.page - 1) * this.data.pageSize;
-    
-    for (let i = 0; i < this.data.pageSize; i++) {
-      const index = startIndex + i;
-      if (index >= 50) break; // 模拟总共50条数据
-      
-      const category = categories[index % categories.length];
-      const title = titles[index % titles.length];
-      
-      posts.push({
-        id: `post_${index + 1}`,
-        title: title,
-        content: `这是帖子${index + 1}的详细内容，包含了相关的讨论和分享...`,
-        summary: `这是帖子${index + 1}的摘要内容...`,
-        category: category,
-        author: {
-          id: `user_${(index % 10) + 1}`,
-          name: `用户${(index % 10) + 1}`,
-          avatar: '/images/avatar-default.png'
-        },
-        images: index % 3 === 0 ? ['/images/post-1.jpg', '/images/post-2.jpg'] : [],
-        likeCount: Math.floor(Math.random() * 100),
-        commentCount: Math.floor(Math.random() * 50),
-        viewCount: Math.floor(Math.random() * 500) + 100,
-        isLiked: Math.random() > 0.7,
-        createTime: this.formatTime(new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000))
-      });
-    }
-    
-    return posts;
-  },
 
   // 帖子点击
   onPostTap(e: any) {
@@ -250,32 +233,66 @@ Page({
 
   // 点赞帖子
   onLikePost(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const post = e.currentTarget.dataset.post;
-    const posts = this.data.posts.map(p => {
-      if (p.id === post.id) {
-        return {
-          ...p,
-          isLiked: !p.isLiked,
-          likeCount: p.isLiked ? p.likeCount - 1 : p.likeCount + 1
-        };
+    
+    wx.cloud.callFunction({
+      name: 'likePost',
+      data: {
+        postId: post.id,
+        isLike: !post.isLiked
+      },
+      success: (res: any) => {
+        if (res.result && typeof res.result === 'object' && (res.result as any).success) {
+          const posts = this.data.posts.map(p => {
+            if (p.id === post.id) {
+              return {
+                ...p,
+                isLiked: (res.result as any).data.isLiked,
+                likeCount: (res.result as any).data.likeCount
+              };
+            }
+            return p;
+          });
+          
+          this.setData({ posts });
+          
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: res.result.data.isLiked ? '点赞成功' : '取消点赞',
+            theme: 'success'
+          });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: (res.result && res.result.message) || '操作失败',
+            theme: 'warning'
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('点赞失败:', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '操作失败，请重试',
+          theme: 'error'
+        });
       }
-      return p;
-    });
-    
-    this.setData({ posts });
-    
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: post.isLiked ? '取消点赞' : '点赞成功',
-      theme: 'success'
     });
   },
 
   // 评论帖子
   onCommentPost(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const post = e.currentTarget.dataset.post;
     // 这里可以跳转到帖子详情页的评论区
     wx.navigateTo({
@@ -285,8 +302,10 @@ Page({
 
   // 分享帖子
   onSharePost(e: any) {
-    e.stopPropagation();
-    const post = e.currentTarget.dataset.post;
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     
     wx.showShareMenu({
       withShareTicket: true,
@@ -303,7 +322,10 @@ Page({
 
   // 图片点击
   onImageTap(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const { images, current } = e.currentTarget.dataset;
     
     wx.previewImage({
@@ -314,8 +336,60 @@ Page({
 
   // 发帖相关
   onCreatePost() {
+    // 检查登录状态 - 优先检查本地存储，然后检查全局数据
+    const userInfo = wx.getStorageSync('userInfo');
+    const app = getApp<IAppOption>();
+    
+    if (!userInfo && !app.globalData.userInfo) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      setTimeout(() => {
+        wx.navigateTo({
+          url: '/pages/login/login'
+        });
+      }, 1500);
+      return;
+    }
+    
+    // 如果本地存储有用户信息但全局数据没有，更新全局数据
+    if (userInfo && !app.globalData.userInfo) {
+      app.globalData.userInfo = userInfo;
+      app.globalData.isLoggedIn = true;
+    }
+    
+    console.log('Opening create dialog...');
+    console.log('Current data:', this.data.newPost);
+    console.log('Category options:', this.data.categoryOptions);
+    
     this.setData({
       showCreateDialog: true,
+      newPost: {
+        category: '', // 设置为空字符串，让用户主动选择分类
+        title: '',
+        content: '',
+        images: []
+      },
+      selectedCategoryIndex: [-1] // 设置为-1表示未选择任何分类
+    }, () => {
+      console.log('Dialog opened, showCreateDialog:', this.data.showCreateDialog);
+      console.log('New post data:', this.data.newPost);
+      console.log('Selected category index:', this.data.selectedCategoryIndex);
+    });
+  },
+
+  onMaskTap(e: any) {
+    // 只有当点击的是遮罩层本身时才关闭弹窗
+    if (e.target === e.currentTarget) {
+      this.onCancelCreate();
+    }
+  },
+
+  onCancelCreate() {
+    this.setData({ 
+      showCreateDialog: false,
+      selectedCategoryIndex: [0],
       newPost: {
         category: 'help',
         title: '',
@@ -325,51 +399,121 @@ Page({
     });
   },
 
-  onCancelCreate() {
-    this.setData({ showCreateDialog: false });
-  },
-
   onConfirmCreate() {
     if (!this.validateNewPost()) {
       return;
     }
     
-    // 模拟发布帖子
-    const newPost: Post = {
-      id: `post_new_${Date.now()}`,
-      title: this.data.newPost.title,
-      content: this.data.newPost.content,
-      summary: this.data.newPost.content.substring(0, 50) + '...',
-      category: this.data.newPost.category,
-      author: {
-        id: 'current_user',
-        name: '我',
-        avatar: '/images/avatar-default.png'
-      },
-      images: this.data.newPost.images,
-      likeCount: 0,
-      commentCount: 0,
-      viewCount: 1,
-      isLiked: false,
-      createTime: '刚刚'
-    };
-    
-    this.setData({
-      posts: [newPost, ...this.data.posts],
-      showCreateDialog: false
+    // 显示加载提示
+    wx.showLoading({
+      title: '发布中...'
     });
     
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '发布成功',
-      theme: 'success'
+    // 调用云函数发布帖子
+    wx.cloud.callFunction({
+      name: 'createPost',
+      data: {
+        title: this.data.newPost.title,
+        content: this.data.newPost.content,
+        category: this.data.newPost.category,
+        images: this.data.newPost.images
+      },
+      success: (res: any) => {
+        wx.hideLoading();
+        
+        if (res.result && typeof res.result === 'object' && (res.result as any).success) {
+          this.setData({
+            showCreateDialog: false,
+            newPost: {
+              category: 'help',
+              title: '',
+              content: '',
+              images: []
+            }
+          });
+          
+          // 刷新帖子列表
+          this.setData({ page: 1 });
+          this.loadPosts(true);
+          
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: '发布成功',
+            theme: 'success'
+          });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: (res.result && res.result.message) || '发布失败',
+            theme: 'error'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('发布帖子失败:', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '网络错误，请重试',
+          theme: 'error'
+        });
+      }
     });
   },
 
   onNewPostCategoryChange(e: any) {
+    const selectedIndex = e.detail.value[0]; // picker 返回的是索引数组
+    const selectedCategory = this.data.categoryOptions[selectedIndex]?.value || 'help';
     this.setData({
-      'newPost.category': e.detail.value
+      selectedCategoryIndex: e.detail.value,
+      'newPost.category': selectedCategory
+    });
+  },
+
+  onTitleChange(e: any) {
+    this.setData({
+      'newPost.title': e.detail.value
+    });
+  },
+
+  onContentChange(e: any) {
+    this.setData({
+      'newPost.content': e.detail.value
+    });
+  },
+
+  // 原生组件事件处理函数
+  onNativeCategoryChange(e: any) {
+    const selectedIndex = e.detail.value;
+    const selectedCategory = this.data.categoryOptions[selectedIndex]?.value || 'help';
+    console.log('Native category change:', selectedIndex, selectedCategory);
+    
+    // 确保数据同步更新，触发界面重新渲染
+    this.setData({
+      selectedCategoryIndex: [selectedIndex],
+      'newPost.category': selectedCategory
+    }, () => {
+      // 验证数据更新是否成功
+      console.log('Category updated - Index:', this.data.selectedCategoryIndex);
+      console.log('Category updated - Value:', this.data.newPost.category);
+      console.log('Category display name:', this.getCategoryName(this.data.newPost.category));
+    });
+  },
+
+  onNativeTitleChange(e: any) {
+    console.log('Native title change:', e.detail.value);
+    this.setData({
+      'newPost.title': e.detail.value
+    });
+  },
+
+  onNativeContentChange(e: any) {
+    console.log('Native content change:', e.detail.value);
+    this.setData({
+      'newPost.content': e.detail.value
     });
   },
 
@@ -400,6 +544,16 @@ Page({
   // 验证新帖子
   validateNewPost(): boolean {
     const { newPost } = this.data;
+    
+    if (!newPost.category || newPost.category.trim() === '') {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择帖子分类',
+        theme: 'warning'
+      });
+      return false;
+    }
     
     if (!newPost.title.trim()) {
       Toast({

@@ -70,15 +70,14 @@
             />
           </t-cell>
           
-          <t-cell title="年级">
-            <t-picker 
-              slot="note"
+          <t-cell title="年级" required>
+            <t-input 
+              slot="note" 
+              placeholder="请输入年级，如：大二、研一等"
               value="{{formData.grade}}"
-              options="{{gradeOptions}}"
               bind:change="onGradeChange"
-            >
-              <text>{{formData.grade || '请选择年级'}}</text>
-            </t-picker>
+              data-field="grade"
+            />
           </t-cell>
           
           <t-cell title="户籍">
@@ -102,30 +101,16 @@
         
         <t-cell-group>
           <t-cell title="擅长科目" required>
-            <view slot="note" class="subject-tags">
-              <t-tag 
-                wx:for="{{subjects}}" 
-                wx:key="*this"
-                theme="{{formData.subjects.includes(item) ? 'primary' : 'default'}}"
-                variant="{{formData.subjects.includes(item) ? 'dark' : 'light'}}"
-                bind:tap="onSubjectTap"
-                data-subject="{{item}}"
-              >
-                {{item}}
-              </t-tag>
-            </view>
+            <t-input 
+              slot="note"
+              placeholder="请输入擅长科目，如：数学、英语、物理等"
+              value="{{formData.subjects}}"
+              data-field="subjects"
+              bind:change="onInputChange"
+            />
           </t-cell>
           
-          <t-cell title="教学经验">
-            <t-picker 
-              slot="note"
-              value="{{formData.experience}}"
-              options="{{experienceOptions}}"
-              bind:change="onExperienceChange"
-            >
-              <text>{{formData.experience || '请选择经验'}}</text>
-            </t-picker>
-          </t-cell>
+
           
           <t-cell title="获得证书">
             <t-textarea 
@@ -148,7 +133,7 @@
         </view>
         
         <t-cell-group>
-          <t-cell title="家教经历">
+          <t-cell title="家教经历" required>
             <t-textarea 
               slot="note"
               placeholder="请描述您的家教经历，包括教过的学生年级、科目、效果等"
@@ -159,7 +144,7 @@
             />
           </t-cell>
           
-          <t-cell title="个人特长">
+          <t-cell title="个人特长" required>
             <t-textarea 
               slot="note"
               placeholder="请描述您的个人特长和优势"
@@ -202,24 +187,13 @@
             />
           </t-cell>
           
-          <t-cell title="微信号">
+          <t-cell title="微信号" required>
             <t-input 
               slot="note" 
               placeholder="请输入微信号"
               value="{{formData.wechat}}"
               bind:change="onInputChange"
               data-field="wechat"
-            />
-          </t-cell>
-          
-          <t-cell title="QQ号">
-            <t-input 
-              slot="note" 
-              type="number"
-              placeholder="请输入QQ号"
-              value="{{formData.qq}}"
-              bind:change="onInputChange"
-              data-field="qq"
             />
           </t-cell>
         </t-cell-group>
@@ -296,11 +270,7 @@
           <view class="section-title">教学能力</view>
           <view class="content-item">
             <text class="label">擅长科目：</text>
-            <text class="value">{{formData.subjects.length > 0 ? formData.subjects.join('、') : '未填写'}}</text>
-          </view>
-          <view class="content-item">
-            <text class="label">教学经验：</text>
-            <text class="value">{{formData.experience || '未填写'}}</text>
+            <text class="value">{{formData.subjects || '未填写'}}</text>
           </view>
           <view class="content-item" wx:if="{{formData.certificates}}">
             <text class="label">获得证书：</text>
@@ -309,15 +279,15 @@
         </view>
 
         <!-- 个人经验 -->
-        <view class="resume-section" wx:if="{{formData.tutorExperience || formData.skills || formData.philosophy}}">
+        <view class="resume-section">
           <view class="section-title">个人经验</view>
-          <view class="content-item" wx:if="{{formData.tutorExperience}}">
+          <view class="content-item">
             <text class="label">家教经历：</text>
-            <text class="value">{{formData.tutorExperience}}</text>
+            <text class="value">{{formData.tutorExperience || '未填写'}}</text>
           </view>
-          <view class="content-item" wx:if="{{formData.skills}}">
+          <view class="content-item">
             <text class="label">个人特长：</text>
-            <text class="value">{{formData.skills}}</text>
+            <text class="value">{{formData.skills || '未填写'}}</text>
           </view>
           <view class="content-item" wx:if="{{formData.philosophy}}">
             <text class="label">教学理念：</text>
@@ -332,13 +302,9 @@
             <text class="label">手机号：</text>
             <text class="value">{{formData.phone || '未填写'}}</text>
           </view>
-          <view class="content-item" wx:if="{{formData.wechat}}">
+          <view class="content-item">
             <text class="label">微信号：</text>
-            <text class="value">{{formData.wechat}}</text>
-          </view>
-          <view class="content-item" wx:if="{{formData.qq}}">
-            <text class="label">QQ号：</text>
-            <text class="value">{{formData.qq}}</text>
+            <text class="value">{{formData.wechat || '未填写'}}</text>
           </view>
         </view>
       </view>

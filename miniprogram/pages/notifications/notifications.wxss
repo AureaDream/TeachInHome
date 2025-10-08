@@ -1,0 +1,262 @@
+/* pages/notifications/notifications.wxss */
+.notifications-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 导航栏 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 30rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left, .nav-right {
+  width: 80rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400rpx;
+}
+
+/* 通知列表 */
+.notifications-list {
+  padding: 20rpx 30rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 60rpx;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #666;
+  margin: 30rpx 0 10rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #999;
+  line-height: 1.5;
+}
+
+/* 通知项 */
+.notification-item {
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.notification-item.unread {
+  border-left: 6rpx solid #0052d9;
+}
+
+.notification-item:active {
+  transform: scale(0.98);
+}
+
+.notification-content {
+  padding: 30rpx;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.notification-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  margin-right: 20rpx;
+  line-height: 1.4;
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.action-btn:active {
+  transform: scale(0.9);
+}
+
+.delete-btn:active {
+  background-color: rgba(227, 77, 89, 0.1);
+}
+
+.notification-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.notification-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-time {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.unread-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background-color: #e34d59;
+  border-radius: 50%;
+}
+
+/* 加载更多 */
+.load-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 0;
+}
+
+.load-more-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 没有更多 */
+.no-more {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
+}
+
+.no-more-text {
+  font-size: 26rpx;
+  color: #ccc;
+}
+
+/* TDesign 组件样式覆盖 */
+.t-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.t-input__wrap {
+  border: 1rpx solid #ddd !important;
+  border-radius: 8rpx !important;
+}
+
+.t-input__wrap--focused {
+  border-color: #0052d9 !important;
+}
+
+.t-textarea__wrap {
+  border: 1rpx solid #ddd !important;
+  border-radius: 8rpx !important;
+}
+
+.t-textarea__wrap--focused {
+  border-color: #0052d9 !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .nav-bar {
+    padding: 0 20rpx;
+  }
+  
+  .notifications-list {
+    padding: 15rpx 20rpx;
+  }
+  
+  .notification-content {
+    padding: 25rpx;
+  }
+  
+  .notification-title {
+    font-size: 30rpx;
+  }
+  
+  .notification-text {
+    font-size: 26rpx;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .notifications-container {
+    background-color: #1a1a1a;
+  }
+  
+  .nav-bar {
+    background-color: #2d2d2d;
+    border-bottom-color: #444;
+  }
+  
+  .nav-title {
+    color: #fff;
+  }
+  
+  .notification-item {
+    background-color: #2d2d2d;
+  }
+  
+  .notification-title {
+    color: #fff;
+  }
+  
+  .notification-text {
+    color: #ccc;
+  }
+  
+  .action-btn {
+    background-color: #444;
+  }
+}

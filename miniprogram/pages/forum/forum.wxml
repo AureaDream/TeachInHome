@@ -84,7 +84,7 @@
           <text class="post-summary">{{item.summary}}</text>
           
           <!-- 图片预览 -->
-          <view wx:if="{{item.images && item.images.length > 0}}" class="post-images">
+          <view wx:if="{{item.images && item.images.length > 0}}" class="post-images" catch:tap="">
             <image 
               wx:for="{{item.images}}"
               wx:for-item="img"
@@ -116,7 +116,7 @@
         </view>
 
         <!-- 操作按钮 -->
-        <view class="post-actions">
+        <view class="post-actions" catch:tap="">
           <t-button 
             size="small"
             variant="text"
@@ -179,79 +179,105 @@
   </scroll-view>
 
   <!-- 发帖弹窗 -->
-  <t-dialog
-    visible="{{showCreateDialog}}"
-    title="发布帖子"
-    confirm-btn="发布"
-    cancel-btn="取消"
-    bind:confirm="onConfirmCreate"
-    bind:cancel="onCancelCreate"
-  >
-    <view class="create-form">
-      <view class="form-item">
-        <text class="form-label">分类</text>
-        <t-picker 
-          value="{{newPost.category}}"
-          options="{{categoryOptions}}"
-          bind:change="onNewPostCategoryChange"
-        >
-          <t-cell 
-            title="选择分类"
-            note="{{getCategoryName(newPost.category)}}"
-            arrow
-          />
-        </t-picker>
+  <view wx:if="{{showCreateDialog}}" class="custom-dialog-mask" bind:tap="onMaskTap">
+    <view class="custom-dialog" catch:tap="">
+      <!-- 弹窗标题 -->
+      <view class="dialog-header">
+        <text class="dialog-title">发布帖子</text>
+        <view class="dialog-close" bind:tap="onCancelCreate">
+          <text class="close-icon">×</text>
+        </view>
       </view>
       
-      <view class="form-item">
-        <text class="form-label">标题</text>
-        <t-input 
-          model:value="{{newPost.title}}"
-          placeholder="请输入帖子标题"
-          maxlength="50"
-        />
-      </view>
-      
-      <view class="form-item">
-        <text class="form-label">内容</text>
-        <t-textarea 
-          model:value="{{newPost.content}}"
-          placeholder="请输入帖子内容"
-          maxlength="500"
-          autosize
-        />
-      </view>
-      
-      <view class="form-item">
-        <text class="form-label">图片</text>
-        <view class="image-upload">
-          <view 
-            wx:for="{{newPost.images}}"
-            wx:key="*this"
-            class="upload-image"
-          >
-            <image src="{{item}}" mode="aspectFill" />
-            <view 
-              class="delete-btn"
-              bind:tap="onDeleteImage"
-              data-index="{{index}}"
-            >
-              <t-icon name="close" size="24rpx" color="#fff" />
+      <!-- 弹窗内容 -->
+      <scroll-view class="dialog-content" scroll-y>
+        <view class="create-form">
+          <view class="form-item" catch:tap="">
+            <text class="form-label">分类</text>
+            <view class="category-selector" catch:tap="">
+              <picker 
+                value="{{selectedCategoryIndex[0]}}"
+                range="{{categoryOptions}}"
+                range-key="label"
+                bind:change="onNativeCategoryChange"
+                catch:tap=""
+              >
+                <view class="picker-display">
+                  <text class="selected-category" wx:if="{{selectedCategoryIndex[0] >= 0}}">{{categoryOptions[selectedCategoryIndex[0]].label}}</text>
+                  <text class="placeholder-text" wx:else>请选择分类</text>
+                  <text class="arrow">▼</text>
+                </view>
+              </picker>
             </view>
           </view>
           
-          <view 
-            wx:if="{{newPost.images.length < 3}}"
-            class="upload-btn"
-            bind:tap="onUploadImage"
-          >
-            <t-icon name="add" size="48rpx" color="#999" />
-            <text class="upload-text">添加图片</text>
+          <view class="form-item" catch:tap="">
+            <text class="form-label">标题</text>
+            <input 
+              class="form-input"
+              value="{{newPost.title}}"
+              maxlength="50"
+              bind:input="onNativeTitleChange"
+              catch:tap=""
+            />
           </view>
+          
+          <view class="form-item" catch:tap="">
+            <text class="form-label">内容</text>
+            <textarea 
+              class="form-textarea"
+              value="{{newPost.content}}"
+              placeholder="请输入帖子内容"
+              maxlength="500"
+              auto-height
+              bind:input="onNativeContentChange"
+              catch:tap=""
+            ></textarea>
+          </view>
+          
+          <view class="form-item" catch:tap="">
+            <text class="form-label">图片</text>
+            <view class="image-upload" catch:tap="">
+              <view 
+                wx:for="{{newPost.images}}"
+                wx:key="*this"
+                class="upload-image"
+                catch:tap=""
+              >
+                <image src="{{item}}" mode="aspectFill" catch:tap="" />
+                <view 
+                  class="delete-btn"
+                  bind:tap="onDeleteImage"
+                  data-index="{{index}}"
+                >
+                  <text class="delete-text">×</text>
+                </view>
+              </view>
+              
+              <view 
+                wx:if="{{newPost.images.length < 3}}"
+                class="upload-btn"
+                bind:tap="onUploadImage"
+              >
+                <text class="upload-icon">+</text>
+                <text class="upload-text">添加图片</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      
+      <!-- 弹窗按钮 -->
+      <view class="dialog-footer" catch:tap="">
+        <view class="dialog-btn cancel-btn" bind:tap="onCancelCreate">
+          <text>取消</text>
+        </view>
+        <view class="dialog-btn confirm-btn" bind:tap="onConfirmCreate">
+          <text>发布</text>
         </view>
       </view>
     </view>
-  </t-dialog>
+  </view>
 
   <!-- Toast提示 -->
   <t-toast id="t-toast" />

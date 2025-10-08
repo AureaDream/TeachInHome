@@ -1,0 +1,9 @@
+{
+  "name": "publishOrder",
+  "version": "1.0.0",
+  "description": "发布订单云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

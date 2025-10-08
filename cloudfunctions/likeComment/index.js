@@ -1,0 +1,125 @@
+// 点赞评论云函数
+const cloud = require('wx-server-sdk');
+
+cloud.init({
+  env: cloud.DYNAMIC_CURRENT_ENV
+});
+
+const db = cloud.database();
+const _ = db.command;
+
+exports.main = async (event, context) => {
+  const wxContext = cloud.getWXContext();
+  const { commentId, isLike } = event; // isLike: true为点赞，false为取消点赞
+  
+  try {
+    console.log('评论点赞操作 - 用户openid:', wxContext.OPENID, '评论ID:', commentId, '操作:', isLike ? '点赞' : '取消点赞');
+    
+    // 获取用户信息
+    let userResult = await db.collection('users').where({
+      _openid: wxContext.OPENID
+    }).get();
+    
+    let userId;
+    
+    if (userResult.data.length === 0) {
+      // 用户不存在，创建用户记录
+      console.log('用户不存在，创建新用户记录，OPENID:', wxContext.OPENID);
+      
+      const newUser = {
+        nickName: '微信用户',
+        avatarUrl: '',
+        loginType: 'wechat',
+        isAuthenticated: false,
+        createTime: new Date(),
+        lastLoginTime: new Date(),
+        phone: '',
+        email: '',
+        bio: '',
+        role: 'user',
+        isAdmin: false,
+        status: 'active'
+      };
+      
+      const createResult = await db.collection('users').add({
+        data: newUser
+      });
+      
+      userId = createResult._id;
+      console.log('创建用户成功，用户ID:', userId);
+    } else {
+      userId = userResult.data[0]._id;
+      console.log('找到用户，用户ID:', userId);
+    }
+    
+    // 验证评论是否存在
+    const commentResult = await db.collection('comments').doc(commentId).get();
+    if (!commentResult.data) {
+      return {
+        success: false,
+        message: '评论不存在'
+      };
+    }
+    
+    const comment = commentResult.data;
+    const likedUsers = comment.likedUsers || [];
+    const currentLikeCount = comment.likeCount || 0;
+    
+    let updateData = {};
+    
+    if (isLike) {
+      // 点赞操作
+      if (!likedUsers.includes(userId)) {
+        updateData = {
+          likedUsers: _.push(userId),
+          likeCount: _.inc(1),
+          updateTime: new Date()
+        };
+      } else {
+        return {
+          success: false,
+          message: '已经点赞过了'
+        };
+      }
+    } else {
+      // 取消点赞操作
+      if (likedUsers.includes(userId)) {
+        updateData = {
+          likedUsers: _.pull(userId),
+          likeCount: _.inc(-1),
+          updateTime: new Date()
+        };
+      } else {
+        return {
+          success: false,
+          message: '还未点赞'
+        };
+      }
+    }
+    
+    // 更新评论
+    await db.collection('comments').doc(commentId).update({
+      data: updateData
+    });
+    
+    // 获取更新后的点赞数
+    const updatedComment = await db.collection('comments').doc(commentId).get();
+    
+    return {
+      success: true,
+      message: isLike ? '点赞成功' : '取消点赞成功',
+      data: {
+        likeCount: updatedComment.data.likeCount,
+        isLiked: isLike
+      }
+    };
+    
+  } catch (error) {
+    console.error('点赞评论失败:', error);
+    return {
+      success: false,
+      message: '操作失败，请重试',
+      error: error.message
+    };
+  }
+};

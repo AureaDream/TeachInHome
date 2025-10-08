@@ -109,66 +109,82 @@ Page({
       // 从云数据库获取最新用户信息
       const db = wx.cloud.database();
       db.collection('users').doc(userInfo._id).get().then(res => {
+        if (!res.data) {
+          console.error('云数据库中未找到用户信息');
+          // 使用本地缓存的用户信息
+          this.processAvatarUrl(userInfo).then(processedUserInfo => {
+            this.setData({ userInfo: processedUserInfo as UserInfo });
+            this.initEditForm(processedUserInfo);
+          });
+          return;
+        }
+        
         const latestUserInfo = res.data;
         console.log('从云数据库获取的用户信息:', latestUserInfo);
         
+        // 优化用户信息合并逻辑
+        const mergedUserInfo = {
+          ...latestUserInfo,
+          // 优先使用云数据库中的最新信息
+          nickName: latestUserInfo.nickName || userInfo.nickName || '用户',
+          avatarUrl: latestUserInfo.avatarUrl || userInfo.avatarUrl || ''
+        };
+        
         // 处理头像URL - 如果是云存储fileID，需要获取临时链接
-        this.processAvatarUrl(latestUserInfo).then(processedUserInfo => {
+        this.processAvatarUrl(mergedUserInfo).then(processedUserInfo => {
           // 更新本地存储
           wx.setStorageSync('userInfo', processedUserInfo);
           
           this.setData({ userInfo: processedUserInfo as UserInfo });
-          
-          // 初始化编辑表单
-          this.setData({
-            editForm: {
-              nickName: processedUserInfo.nickName || '',
-              phone: processedUserInfo.phone || '',
-              email: processedUserInfo.email || '',
-              bio: processedUserInfo.bio || ''
-            }
-          });
+          this.initEditForm(processedUserInfo);
+        }).catch(avatarErr => {
+          console.error('处理头像URL失败:', avatarErr);
+          // 即使头像处理失败，也要显示用户信息
+          mergedUserInfo.avatarUrl = '/images/avatar-default.svg';
+          wx.setStorageSync('userInfo', mergedUserInfo);
+          this.setData({ userInfo: mergedUserInfo as UserInfo });
+          this.initEditForm(mergedUserInfo);
         });
       }).catch(err => {
         console.error('获取用户信息失败', err);
         // 如果获取失败，使用本地缓存的用户信息
         this.processAvatarUrl(userInfo).then(processedUserInfo => {
           this.setData({ userInfo: processedUserInfo as UserInfo });
-          
-          // 初始化编辑表单
-          this.setData({
-            editForm: {
-              nickName: processedUserInfo.nickName || '',
-              phone: processedUserInfo.phone || '',
-              email: processedUserInfo.email || '',
-              bio: processedUserInfo.bio || ''
-            }
-          });
+          this.initEditForm(processedUserInfo);
+        }).catch(avatarErr => {
+          console.error('处理本地用户头像失败:', avatarErr);
+          userInfo.avatarUrl = '/images/avatar-default.svg';
+          this.setData({ userInfo: userInfo as UserInfo });
+          this.initEditForm(userInfo);
         });
-      });
+          
+          });
     } else {
-      // 如果没有用户信息，创建默认数据用于测试
-      console.log('没有用户信息，创建默认数据');
+      // 如果没有本地用户信息，显示默认信息
       const defaultUserInfo = {
-        _id: 'test_user_id',
-        userId: 'test123',
-        nickName: '测试用户',
-        avatarUrl: '',
+        _id: '',
+        userId: '',
+        nickName: '用户',
+        avatarUrl: '/images/avatar-default.svg',
         phone: '',
         email: '',
         bio: ''
       };
-      
-      this.setData({ 
-        userInfo: defaultUserInfo,
-        editForm: {
-          nickName: defaultUserInfo.nickName,
-          phone: defaultUserInfo.phone,
-          email: defaultUserInfo.email,
-          bio: defaultUserInfo.bio
-        }
-      });
+      this.setData({ userInfo: defaultUserInfo as UserInfo });
+      this.initEditForm(defaultUserInfo);
     }
+  },
+
+  // 初始化编辑表单的辅助方法
+  initEditForm(userInfo: any) {
+    this.setData({
+      editForm: {
+        nickName: userInfo.nickName || '',
+        phone: userInfo.phone || '',
+        email: userInfo.email || '',
+        bio: userInfo.bio || ''
+      }
+    });
   },
 
   // 处理头像URL，将云存储fileID转换为可访问的URL
@@ -181,7 +197,7 @@ Page({
         // 确保云开发环境已初始化
         if (!wx.cloud) {
           console.error('云开发未初始化');
-          userInfo.avatarUrl = '/images/avatar-default.png';
+          userInfo.avatarUrl = '/images/avatar-default.svg';
           return userInfo;
         }
         
@@ -200,20 +216,20 @@ Page({
             console.log('头像URL转换成功:', userInfo.avatarUrl);
           } else {
             console.error('获取临时URL失败:', fileInfo.errMsg);
-            userInfo.avatarUrl = '/images/avatar-default.png';
+            userInfo.avatarUrl = '/images/avatar-default.svg';
           }
         } else {
           console.error('未获取到文件信息');
-          userInfo.avatarUrl = '/images/avatar-default.png';
+          userInfo.avatarUrl = '/images/avatar-default.svg';
         }
       } catch (error) {
         console.error('获取头像临时URL失败:', error);
         // 如果获取失败，使用默认头像
-        userInfo.avatarUrl = '/images/avatar-default.png';
+        userInfo.avatarUrl = '/images/avatar-default.svg';
       }
     } else if (!userInfo.avatarUrl || userInfo.avatarUrl === '') {
       // 如果没有头像URL，使用默认头像
-      userInfo.avatarUrl = '/images/avatar-default.png';
+      userInfo.avatarUrl = '/images/avatar-default.svg';
     }
     
     return userInfo;
@@ -286,8 +302,14 @@ Page({
   // 加载消息通知
   loadNotifications() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || !userInfo._id) return;
+    if (!userInfo || !userInfo._id) {
+      console.log('用户信息不存在，无法加载通知');
+      // 如果没有用户信息，先尝试初始化通知数据
+      this.initNotificationsData();
+      return;
+    }
     
+    console.log('开始加载消息通知，用户ID:', userInfo._id);
     const db = wx.cloud.database();
     
     db.collection('notifications')
@@ -298,6 +320,14 @@ Page({
       .limit(10)
       .get()
       .then((res: any) => {
+        console.log('获取通知数据成功:', res.data);
+        
+        if (res.data.length === 0) {
+          console.log('没有通知数据，尝试初始化');
+          this.initNotificationsData();
+          return;
+        }
+        
         const notifications = res.data.map((item: any) => ({
           id: item._id,
           title: item.title,
@@ -315,12 +345,48 @@ Page({
       })
       .catch(err => {
         console.error('获取消息通知失败', err);
-        // 加载失败时使用空数组
+        // 如果是集合不存在的错误，尝试初始化数据
+        if (err.errCode === -502001 || err.message.includes('collection')) {
+          console.log('notifications集合不存在，尝试初始化数据');
+          this.initNotificationsData();
+        } else {
+          // 其他错误，使用空数组
+          this.setData({
+            notifications: [],
+            unreadCount: 0
+          });
+        }
+      });
+  },
+
+  // 初始化通知数据
+  initNotificationsData() {
+    console.log('开始初始化通知数据');
+    wx.cloud.callFunction({
+      name: 'initNotifications',
+      data: {}
+    }).then((res: any) => {
+      console.log('初始化通知数据结果:', res);
+      if (res.result && res.result.success) {
+        // 初始化成功后重新加载通知
+        setTimeout(() => {
+          this.loadNotifications();
+        }, 1000);
+      } else {
+        // 初始化失败，创建默认的空状态
         this.setData({
           notifications: [],
           unreadCount: 0
         });
+      }
+    }).catch(err => {
+      console.error('初始化通知数据失败:', err);
+      // 创建默认的空状态
+      this.setData({
+        notifications: [],
+        unreadCount: 0
       });
+    });
   },
   
   // 格式化时间
@@ -782,15 +848,10 @@ Page({
     return true;
   },
 
-  // 消息通知
+  // 消息通知 - 跳转到消息通知页面
   onNotificationSettings() {
-    this.setData({ showNotificationDialog: true });
-    
-    // 标记所有通知为已读
-    const notifications = this.data.notifications.map(n => ({ ...n, read: true }));
-    this.setData({
-      notifications,
-      unreadCount: 0
+    wx.navigateTo({
+      url: '/pages/notifications/notifications'
     });
   },
 
@@ -920,20 +981,30 @@ Page({
 
   // 编辑头像
   onEditAvatar() {
-    wx.chooseMedia({
+    // 使用 wx.chooseImage 替代 wx.chooseMedia 以避免磁盘空间问题
+    wx.chooseImage({
       count: 1,
-      mediaType: ['image'],
+      sizeType: ['compressed'], // 使用压缩图片减少文件大小
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const tempFilePath = res.tempFiles[0].tempFilePath;
+        const tempFilePath = res.tempFilePaths[0];
         this.uploadAvatar(tempFilePath);
       },
       fail: (err) => {
         console.error('选择图片失败', err);
+        
+        // 根据错误类型提供更具体的错误信息
+        let errorMessage = '选择图片失败';
+        if (err.errMsg && err.errMsg.includes('ENOSPC')) {
+          errorMessage = '设备存储空间不足，请清理后重试';
+        } else if (err.errMsg && err.errMsg.includes('cancel')) {
+          return; // 用户取消选择，不显示错误提示
+        }
+        
         Toast({
           context: this,
           selector: '#t-toast',
-          message: '选择图片失败',
+          message: errorMessage,
           theme: 'error'
         });
       }
@@ -947,8 +1018,23 @@ Page({
     });
 
     const userInfo = this.data.userInfo;
-    const fileName = `${userInfo._id || userInfo.userId || Date.now()}.jpg`;
-    const cloudPath = `cloud-storage/avatars/${fileName}`;
+    
+    // 检查用户信息是否有效
+    if (!userInfo || (!userInfo._id && !userInfo.userId)) {
+      wx.hideLoading();
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '用户信息无效，请重新登录',
+        theme: 'error'
+      });
+      return;
+    }
+
+    // 生成唯一的文件名，使用时间戳确保唯一性
+    const timestamp = Date.now();
+    const fileName = `${userInfo._id || userInfo.userId}_${timestamp}.jpg`;
+    const cloudPath = `avatars/${fileName}`;
 
     wx.cloud.uploadFile({
       cloudPath: cloudPath,
@@ -960,10 +1046,19 @@ Page({
       fail: (err) => {
         console.error('头像上传失败', err);
         wx.hideLoading();
+        
+        // 根据错误类型提供更具体的错误信息
+        let errorMessage = '头像上传失败';
+        if (err.errMsg && err.errMsg.includes('ENOSPC')) {
+          errorMessage = '存储空间不足，请稍后重试';
+        } else if (err.errMsg && err.errMsg.includes('network')) {
+          errorMessage = '网络连接异常，请检查网络';
+        }
+        
         Toast({
           context: this,
           selector: '#t-toast',
-          message: '头像上传失败',
+          message: errorMessage,
           theme: 'error'
         });
       }

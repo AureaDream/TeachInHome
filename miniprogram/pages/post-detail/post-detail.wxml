@@ -1,0 +1,196 @@
+<view class="post-detail-container">
+  <!-- 加载状态 -->
+  <t-loading wx:if="{{loading}}" theme="circular" size="40rpx" text="加载中..." />
+  
+  <!-- 帖子详情 -->
+  <view wx:if="{{!loading && post}}" class="post-detail">
+    <!-- 帖子头部 -->
+    <view class="post-header">
+      <view class="author-info">
+        <t-avatar src="{{post.author.avatar}}" size="80rpx" />
+        <view class="author-details">
+          <text class="author-name">{{post.author.name}}</text>
+          <text class="post-time">{{post.createTime}}</text>
+        </view>
+      </view>
+      <t-tag theme="{{getCategoryTheme(post.category)}}" size="small">
+        {{getCategoryName(post.category)}}
+      </t-tag>
+    </view>
+    
+    <!-- 帖子标题 -->
+    <view class="post-title">
+      <text>{{post.title}}</text>
+    </view>
+    
+    <!-- 帖子内容 -->
+    <view class="post-content">
+      <text>{{post.content}}</text>
+    </view>
+    
+    <!-- 帖子图片 -->
+    <view wx:if="{{post.images.length > 0}}" class="post-images">
+      <view 
+        wx:for="{{post.images}}" 
+        wx:key="index" 
+        class="image-item"
+        bindtap="onImageTap"
+        data-images="{{post.images}}"
+        data-current="{{item}}"
+      >
+        <image src="{{item}}" mode="aspectFill" />
+      </view>
+    </view>
+    
+    <!-- 帖子统计 -->
+    <view class="post-stats">
+      <view class="stat-item">
+        <t-icon name="thumb-up" size="28rpx" />
+        <text>{{post.likeCount}}</text>
+      </view>
+      <view class="stat-item">
+        <t-icon name="chat" size="28rpx" />
+        <text>{{post.commentCount}}</text>
+      </view>
+      <view class="stat-item">
+        <t-icon name="browse" size="28rpx" />
+        <text>{{post.viewCount}}</text>
+      </view>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="post-actions">
+      <t-button 
+        theme="{{post.isLiked ? 'primary' : 'default'}}" 
+        variant="outline" 
+        size="small"
+        bindtap="onLikePost"
+      >
+        {{post.isLiked ? '已点赞' : '点赞'}}
+      </t-button>
+      
+      <t-button 
+        theme="default" 
+        variant="outline" 
+        size="small"
+        bindtap="onShowCommentInput"
+      >
+        评论
+      </t-button>
+      
+      <t-button 
+        theme="default" 
+        variant="outline" 
+        size="small"
+        bindtap="onSharePost"
+      >
+        转发
+      </t-button>
+    </view>
+  </view>
+  
+  <!-- 评论区域 -->
+  <view class="comments-section">
+    <view class="comments-header">
+      <text class="comments-title">评论 ({{post ? post.commentCount : 0}})</text>
+    </view>
+    
+    <!-- 评论列表 -->
+    <view wx:if="{{comments.length > 0}}" class="comments-list">
+      <view 
+        wx:for="{{comments}}" 
+        wx:key="id" 
+        class="comment-item"
+      >
+        <view class="comment-header">
+          <t-avatar src="{{item.author.avatar}}" size="60rpx" />
+          <view class="comment-author">
+            <text class="author-name">{{item.author.name}}</text>
+            <text class="comment-time">{{item.createTime}}</text>
+          </view>
+        </view>
+        
+        <view class="comment-content">
+          <text>{{item.content}}</text>
+        </view>
+        
+        <view class="comment-actions">
+          <view class="action-item" bindtap="onLikeComment" data-comment="{{item}}">
+            <t-icon name="thumb-up" size="20rpx" color="{{item.isLiked ? '#0052d9' : '#999999'}}" />
+            <text class="action-text {{item.isLiked ? 'liked' : ''}}">{{item.likeCount}}</text>
+          </view>
+          
+          <view class="action-item" bindtap="onReplyComment" data-comment="{{item}}">
+            <t-icon name="chat" size="20rpx" color="#999999" />
+            <text class="action-text">回复</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view wx:if="{{comments.length === 0 && !loadingComments}}" class="empty-comments">
+      <t-empty icon="chat" description="无人问津噢，来光顾一下吧" />
+    </view>
+    
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMoreComments}}" class="load-more">
+      <t-button 
+        theme="default" 
+        variant="text" 
+        size="small"
+        loading="{{loadingComments}}"
+        bindtap="loadComments"
+      >
+        {{loadingComments ? '加载中...' : '加载更多评论'}}
+      </t-button>
+    </view>
+    
+    <view wx:if="{{!hasMoreComments && comments.length > 0}}" class="no-more">
+      <text>没有更多评论了</text>
+    </view>
+  </view>
+  
+  <!-- 评论输入框 -->
+  <view wx:if="{{showCommentInput}}" class="comment-input-overlay">
+    <view class="comment-input-container">
+      <view class="input-header">
+        <text class="input-title">
+          {{replyToComment ? '回复 @' + replyToComment.author.name : '发表评论'}}
+        </text>
+        <t-icon name="close" size="32rpx" bindtap="onCancelComment" />
+      </view>
+      
+      <t-textarea 
+        value="{{commentInput}}"
+        placeholder="{{replyToComment ? '回复 @' + replyToComment.author.name : '……'}}"
+        maxlength="500"
+        autosize
+        bind:change="onCommentInputChange"
+      />
+      
+      <view class="input-actions">
+        <t-button 
+          theme="default" 
+          variant="outline" 
+          size="small"
+          bindtap="onCancelComment"
+        >
+          取消
+        </t-button>
+        
+        <t-button 
+          theme="primary" 
+          size="small"
+          loading="{{sendingComment}}"
+          bindtap="onSendComment"
+        >
+          {{sendingComment ? '发送中...' : '发送'}}
+        </t-button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Toast 组件 -->
+<t-toast id="t-toast" />

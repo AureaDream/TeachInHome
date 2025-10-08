@@ -1,4 +1,0 @@
-{
-  "read": "auth != null",
-  "write": "auth != null && (resource == null || auth.openid == resource._openid)"
-}

@@ -1,0 +1,80 @@
+<!--pages/notifications/notifications.wxml-->
+<view class="notifications-container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-left" bind:tap="onBack">
+      <t-icon name="chevron-left" size="48rpx" color="#333" />
+    </view>
+    <view class="nav-title">消息通知</view>
+    <view class="nav-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading && notifications.length === 0}}" class="loading-container">
+    <t-loading theme="circular" size="60rpx" text="加载中..." />
+  </view>
+
+  <!-- 通知列表 -->
+  <view wx:else class="notifications-list">
+    <!-- 空状态 -->
+    <view wx:if="{{notifications.length === 0 && !loading}}" class="empty-state">
+      <t-icon name="notification" size="120rpx" color="#ddd" />
+      <text class="empty-text">暂无消息通知</text>
+      <text class="empty-desc">您的消息通知将在这里显示</text>
+    </view>
+
+    <!-- 通知项 -->
+    <view 
+      wx:for="{{notifications}}"
+      wx:key="_id"
+      class="notification-item {{!item.read ? 'unread' : ''}}"
+    >
+      <view class="notification-content">
+        <view class="notification-header">
+          <text class="notification-title">{{item.title}}</text>
+          <view class="notification-actions">
+            <view 
+              class="action-btn delete-btn"
+              data-index="{{index}}"
+              bind:tap="onDeleteNotification"
+            >
+              <t-icon name="delete" size="32rpx" color="#e34d59" />
+            </view>
+          </view>
+        </view>
+        
+        <text class="notification-text">{{item.content}}</text>
+        
+        <view class="notification-footer">
+          <text class="notification-time">{{item.time}}</text>
+          <view wx:if="{{!item.read}}" class="unread-dot"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore && notifications.length > 0}}" class="load-more">
+      <t-loading wx:if="{{loading}}" theme="circular" size="40rpx" text="加载更多..." />
+      <text wx:else class="load-more-text">上拉加载更多</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view wx:if="{{!hasMore && notifications.length > 0}}" class="no-more">
+      <text class="no-more-text">没有更多消息了</text>
+    </view>
+  </view>
+
+  <!-- 删除确认弹窗 -->
+  <t-dialog
+    visible="{{showDeleteConfirm}}"
+    title="删除确认"
+    content="确定要删除这条消息通知吗？删除后无法恢复。"
+    confirm-btn="删除"
+    cancel-btn="取消"
+    bind:confirm="onConfirmDelete"
+    bind:cancel="onCancelDelete"
+  />
+
+  <!-- Toast 提示 -->
+  <!-- <t-toast id="t-toast" /> -->
+</view>
