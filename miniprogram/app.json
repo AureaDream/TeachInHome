@@ -11,6 +11,7 @@
     "pages/my-posts/my-posts",
     "pages/my-comments/my-comments",
     "pages/admin/admin",
+    "pages/publish-order-admin/publish-order-admin",
     "pages/my-orders/my-orders",
     "pages/index/index",
     "pages/logs/logs"

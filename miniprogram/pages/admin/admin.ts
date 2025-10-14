@@ -1,5 +1,12 @@
 import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
 
+// 云函数返回值接口
+interface CloudFunctionResult {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
 interface User {
   userId: string;
   nickName: string;
@@ -15,12 +22,28 @@ interface User {
 
 interface Order {
   orderId: string;
+  orderNumber?: string;
+  title: string;
+  studentName: string;
   status: 'pending' | 'accepted' | 'completed' | 'cancelled';
   subject: string;
   educationStage: string;
+  grade: string;
+  studentGender: string;
+  teacherRequirements: string;
+  location: string;
+  salaryRange: string;
   price: number;
+  hoursRequired: number;
+  description: string;
+  requirements: string;
+  contactInfo: string;
+  publisherId: string;
   publisherName: string;
   createTime: string;
+  updateTime?: string;
+  viewCount: number;
+  applicantCount: number;
 }
 
 interface Post {
@@ -46,9 +69,21 @@ interface EditUserForm {
 
 interface EditOrderForm {
   orderId: string;
+  orderNumber?: string;
+  title: string;
+  studentName: string;
   subject: string;
   educationStage: string;
+  grade: string;
+  studentGender: string;
+  teacherRequirements: string;
+  location: string;
+  salaryRange: string;
   price: number;
+  hoursRequired: number;
+  description: string;
+  requirements: string;
+  contactInfo: string;
   status: 'pending' | 'accepted' | 'completed' | 'cancelled';
 }
 
@@ -62,20 +97,6 @@ interface PasswordForm {
   confirmPassword: string;
 }
 
-interface PublishOrderForm {
-  orderNumber: string;
-  title: string;
-  subject: string;
-  grade: string;
-  studentGender: string;
-  teacherRequirements: string;
-  location: string;
-  salaryRange: string;
-  price: number;
-  description: string;
-  requirements: string;
-  contactInfo: string;
-}
 
 interface SystemSettings {
   enableRegister: boolean;
@@ -198,52 +219,7 @@ Page({
       oldPassword: '',
       newPassword: '',
       confirmPassword: ''
-    } as PasswordForm,
-
-    // 订单发布相关
-    showPublishOrderDialog: false,
-    publishOrderForm: {
-      orderNumber: '',
-      title: '',
-      subject: '数学',
-      grade: '小学',
-      studentGender: '不限',
-      teacherRequirements: '',
-      location: '',
-      salaryRange: '',
-      price: 0,
-      description: '',
-      requirements: '',
-      contactInfo: ''
-    } as PublishOrderForm,
-    publishOrderSubjectValue: [0],
-    publishOrderGradeValue: [0],
-    publishOrderGenderValue: [0],
-    publishingOrder: false,
-    
-    // 发布订单表单选项
-    publishOrderSubjectOptions: [
-      { label: '数学', value: '数学' },
-      { label: '英语', value: '英语' },
-      { label: '语文', value: '语文' },
-      { label: '物理', value: '物理' },
-      { label: '化学', value: '化学' },
-      { label: '生物', value: '生物' },
-      { label: '历史', value: '历史' },
-      { label: '地理', value: '地理' },
-      { label: '政治', value: '政治' }
-    ],
-    publishOrderGradeOptions: [
-      { label: '小学', value: '小学' },
-      { label: '初中', value: '初中' },
-      { label: '高中', value: '高中' },
-      { label: '大学', value: '大学' }
-    ],
-    publishOrderGenderOptions: [
-      { label: '不限', value: '不限' },
-      { label: '男', value: '男' },
-      { label: '女', value: '女' }
-    ]
+    } as PasswordForm
   },
 
   onLoad() {
@@ -566,22 +542,111 @@ Page({
     });
   },
 
-  loadOrderList() {
+  async loadOrderList() {
     const { orderPage, orderPageSize, searchValue, orderStatusValue, orderSubjectValue } = this.data;
     
     this.setData({ loading: true });
     
-    // 模拟加载订单列表
-    setTimeout(() => {
-      // 生成模拟数据
-      const orders = this.generateMockOrders(orderPage, orderPageSize, searchValue, orderStatusValue, orderSubjectValue);
+    try {
+      // 构建查询条件
+      const db = wx.cloud.database();
+      let query: any = db.collection('orders');
       
-      this.setData({
-        orderList: [...this.data.orderList, ...orders],
-        hasMoreOrders: orders.length === orderPageSize,
-        loading: false
+      // 添加筛选条件
+      const whereConditions: any = {};
+      
+      // 状态筛选
+      if (orderStatusValue && orderStatusValue !== 'all') {
+        whereConditions.status = orderStatusValue;
+      }
+      
+      // 科目筛选
+      if (orderSubjectValue && orderSubjectValue !== 'all') {
+        whereConditions.subject = orderSubjectValue;
+      }
+      
+      // 搜索条件
+      if (searchValue && searchValue.trim()) {
+        // 使用正则表达式进行模糊搜索
+        const searchRegex = db.RegExp({
+          regexp: searchValue.trim(),
+          options: 'i'
+        });
+        whereConditions.$or = [
+          { title: searchRegex },
+          { studentName: searchRegex },
+          { description: searchRegex },
+          { location: searchRegex }
+        ];
+      }
+      
+      // 应用查询条件
+      if (Object.keys(whereConditions).length > 0) {
+        query = query.where(whereConditions);
+      }
+      
+      // 分页查询
+      const result = await query
+        .orderBy('createTime', 'desc')
+        .skip((orderPage - 1) * orderPageSize)
+        .limit(orderPageSize)
+        .get();
+      
+      // 处理订单数据
+      const orders = result.data.map((order: any) => ({
+        orderId: order._id,
+        orderNumber: order.orderNumber || order.orderId,
+        title: order.title,
+        studentName: order.studentName,
+        subject: order.subject,
+        educationStage: order.educationStage || order.grade || '未知', // 添加educationStage字段
+        grade: order.grade,
+        studentGender: order.studentGender,
+        teacherRequirements: order.teacherRequirements,
+        location: order.location,
+        salaryRange: order.salaryRange,
+        price: order.price,
+        hoursRequired: order.hoursRequired,
+        description: order.description,
+        requirements: order.requirements,
+        contactInfo: order.contactInfo,
+        status: order.status,
+        publisherId: order.publisherId,
+        publisherName: order.publisherName,
+        createTime: this.formatTime(order.createTime),
+        updateTime: order.updateTime,
+        viewCount: order.viewCount || 0,
+        applicantCount: order.applicantCount || 0
+      }));
+      
+      // 更新数据
+      if (orderPage === 1) {
+        // 首次加载或刷新
+        this.setData({
+          orderList: orders,
+          hasMoreOrders: orders.length === orderPageSize,
+          loading: false
+        });
+      } else {
+        // 加载更多
+        this.setData({
+          orderList: [...this.data.orderList, ...orders],
+          hasMoreOrders: orders.length === orderPageSize,
+          loading: false
+        });
+      }
+      
+    } catch (error) {
+      console.error('加载订单列表失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '加载订单列表失败',
+        theme: 'error'
       });
-    }, 1000);
+      
+      this.setData({ loading: false });
+    }
   },
 
   loadMoreOrders() {
@@ -610,31 +675,78 @@ Page({
     });
   },
 
-  onOrderDetail(e: any) {
-    const orderId = e.currentTarget.dataset.id;
-    // 跳转到订单详情页面
-    wx.navigateTo({
-      url: `/pages/order-detail/order-detail?id=${orderId}`
-    });
-  },
-
+  // 编辑订单
   onEditOrder(e: any) {
-    e.stopPropagation();
     const orderId = e.currentTarget.dataset.id;
-    const order = this.data.orderList.find(o => o.orderId === orderId);
-    
+    const order = this.data.orderList.find(item => item.orderId === orderId);
     if (order) {
+      // 填充表单数据
       this.setData({
         editOrderForm: {
           orderId: order.orderId,
-          subject: order.subject,
-          educationStage: order.educationStage,
-          price: order.price,
-          status: order.status
+          orderNumber: order.orderNumber || '',
+          title: order.title || '',
+          subject: order.subject || '',
+          grade: order.grade || '',
+          studentName: order.studentName || '',
+          studentGender: order.studentGender || '',
+          teacherRequirements: order.teacherRequirements || '',
+          location: order.location || '',
+          salaryRange: order.salaryRange || '',
+          price: order.price || 0,
+          hoursRequired: order.hoursRequired || 0,
+          description: order.description || '',
+          requirements: order.requirements || '',
+          contactInfo: order.contactInfo || '',
+          status: order.status,
+          educationStage: order.educationStage || ''
         },
         showOrderEditDialog: true
       });
     }
+  },
+
+  // 删除订单
+  onDeleteOrder(e: any) {
+    const orderId = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这个订单吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '删除中...' });
+            
+            const result = await wx.cloud.callFunction({
+              name: 'deleteOrder',
+              data: { orderId }
+            });
+    
+            wx.hideLoading();
+            
+            if (result.result && (result.result as CloudFunctionResult).success) {
+              wx.showToast({
+                title: '删除成功',
+                icon: 'success'
+              });
+              this.loadOrderList();
+            } else {
+              wx.showToast({
+                title: (result.result as CloudFunctionResult)?.message || '删除失败',
+                icon: 'error'
+              });
+            }
+          } catch (error) {
+            wx.hideLoading();
+            console.error('删除订单失败:', error);
+            wx.showToast({
+              title: '删除失败',
+              icon: 'error'
+            });
+          }
+        }
+      }
+    });
   },
 
   onEditOrderFormChange(e: any) {
@@ -650,94 +762,135 @@ Page({
     });
   },
 
-  onConfirmOrderEdit() {
+  async onConfirmOrderEdit() {
     const { editOrderForm } = this.data;
     
-    // 表单验证
+    // 验证必填字段
+    if (!editOrderForm.title.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入订单标题',
+        theme: 'warning'
+      });
+      return;
+    }
+    
+    if (!editOrderForm.studentName.trim()) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请输入学生姓名',
+        theme: 'warning'
+      });
+      return;
+    }
+    
     if (!editOrderForm.subject.trim()) {
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '请输入科目',
+        message: '请选择科目',
         theme: 'warning'
       });
       return;
     }
     
-    if (!editOrderForm.educationStage.trim()) {
+    if (!editOrderForm.salaryRange.trim()) {
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '请输入教育阶段',
+        message: '请输入薪资范围',
         theme: 'warning'
       });
       return;
     }
     
-    if (isNaN(Number(editOrderForm.price)) || Number(editOrderForm.price) <= 0) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入正确的报酬',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    // 更新订单信息
-    const orderList = this.data.orderList.map(order => {
-      if (order.orderId === editOrderForm.orderId) {
-        return {
-          ...order,
+    try {
+      wx.showLoading({ title: '更新中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'updateOrder',
+        data: {
+          orderId: editOrderForm.orderId,
+          title: editOrderForm.title,
+          studentName: editOrderForm.studentName,
           subject: editOrderForm.subject,
           educationStage: editOrderForm.educationStage,
-          price: Number(editOrderForm.price),
+          grade: editOrderForm.grade,
+          studentGender: editOrderForm.studentGender,
+          teacherRequirements: editOrderForm.teacherRequirements,
+          location: editOrderForm.location,
+          salaryRange: editOrderForm.salaryRange,
+          hoursRequired: editOrderForm.hoursRequired,
+          description: editOrderForm.description,
+          requirements: editOrderForm.requirements,
+          contactInfo: editOrderForm.contactInfo,
           status: editOrderForm.status
-        };
+        }
+      });
+
+      wx.hideLoading();
+      
+      if (result.result && (result.result as CloudFunctionResult).success) {
+        // 更新本地订单列表
+        const orderList = this.data.orderList.map(order => {
+          if (order.orderId === editOrderForm.orderId) {
+            return {
+              ...order,
+              title: editOrderForm.title,
+              studentName: editOrderForm.studentName,
+              subject: editOrderForm.subject,
+              educationStage: editOrderForm.educationStage,
+              grade: editOrderForm.grade,
+              studentGender: editOrderForm.studentGender,
+              teacherRequirements: editOrderForm.teacherRequirements,
+              location: editOrderForm.location,
+              salaryRange: editOrderForm.salaryRange,
+              hoursRequired: editOrderForm.hoursRequired,
+              description: editOrderForm.description,
+              requirements: editOrderForm.requirements,
+              contactInfo: editOrderForm.contactInfo,
+              status: editOrderForm.status,
+              updateTime: new Date().toISOString()
+            };
+          }
+          return order;
+        });
+        
+        this.setData({
+          orderList,
+          showOrderEditDialog: false
+        });
+        
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '订单更新成功',
+          theme: 'success'
+        });
+      } else {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: (result.result as CloudFunctionResult)?.message || '更新失败',
+          theme: 'error'
+        });
       }
-      return order;
-    });
-    
-    this.setData({
-      orderList,
-      showOrderEditDialog: false
-    });
-    
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '订单信息已更新',
-      theme: 'success'
-    });
+    } catch (error) {
+      wx.hideLoading();
+      console.error('更新订单失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '更新失败',
+        theme: 'error'
+      });
+    }
   },
 
   onCancelOrderEdit() {
     this.setData({ showOrderEditDialog: false });
-  },
-
-  onDeleteOrder(e: any) {
-    e.stopPropagation();
-    const orderId = e.currentTarget.dataset.id;
-    
-    wx.showModal({
-      title: '提示',
-      content: '确定要删除该订单吗？',
-      success: (res) => {
-        if (res.confirm) {
-          // 删除订单
-          const orderList = this.data.orderList.filter(order => order.orderId !== orderId);
-          
-          this.setData({ orderList });
-          
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '订单已删除',
-            theme: 'success'
-          });
-        }
-      }
-    });
   },
 
   getOrderStatusText(status: string) {
@@ -1037,201 +1190,15 @@ Page({
     }, 500);
   },
 
+  // 跳转到发布订单页面
+  onPublishOrder() {
+    wx.navigateTo({
+      url: '/pages/publish-order-admin/publish-order-admin'
+    });
+  },
+
   onCancelChangePassword() {
     this.setData({ showChangePasswordDialog: false });
-  },
-
-  // 订单发布相关方法
-  onPublishOrder() {
-    this.setData({
-      showPublishOrderDialog: true,
-      publishOrderForm: {
-        orderNumber: '',
-        title: '',
-        subject: '数学',
-        grade: '小学',
-        studentGender: '不限',
-        teacherRequirements: '',
-        location: '',
-        salaryRange: '',
-        price: 0,
-        description: '',
-        requirements: '',
-        contactInfo: ''
-      },
-      publishOrderSubjectValue: [0],
-      publishOrderGradeValue: [0],
-      publishOrderGenderValue: [0]
-    });
-  },
-
-  onPublishOrderFormChange(e: any) {
-    const { field } = e.currentTarget.dataset;
-    const { value } = e.detail;
-    this.setData({
-      [`publishOrderForm.${field}`]: value
-    });
-  },
-
-  onPublishOrderSubjectChange(e: any) {
-    const selectedIndex = e.detail.value[0];
-    const selectedOption = this.data.publishOrderSubjectOptions[selectedIndex];
-    this.setData({
-      'publishOrderForm.subject': selectedOption.value,
-      publishOrderSubjectValue: e.detail.value
-    });
-  },
-
-  onPublishOrderGradeChange(e: any) {
-    const selectedIndex = e.detail.value[0];
-    const selectedOption = this.data.publishOrderGradeOptions[selectedIndex];
-    this.setData({
-      'publishOrderForm.grade': selectedOption.value,
-      publishOrderGradeValue: e.detail.value
-    });
-  },
-
-  onPublishOrderGenderChange(e: any) {
-    const selectedIndex = e.detail.value[0];
-    const selectedOption = this.data.publishOrderGenderOptions[selectedIndex];
-    this.setData({
-      'publishOrderForm.studentGender': selectedOption.value,
-      publishOrderGenderValue: e.detail.value
-    });
-  },
-
-  async onConfirmPublishOrder() {
-    const form = this.data.publishOrderForm;
-    
-    // 表单验证
-    if (!form.orderNumber.trim()) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入订单编号',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (!form.title.trim()) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入订单标题',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (!form.location.trim()) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入上课地点',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (!form.salaryRange.trim()) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入薪资范围',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (!form.description.trim()) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入订单描述',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (form.price <= 0) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入正确的报酬金额',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    this.setData({ publishingOrder: true });
-    
-    try {
-      // 调用云函数发布订单
-      const result = await wx.cloud.callFunction({
-        name: 'publishOrder',
-        data: {
-          orderNumber: form.orderNumber.trim(),
-          title: form.title.trim(),
-          subject: form.subject,
-          grade: form.grade,
-          studentGender: form.studentGender,
-          teacherRequirements: form.teacherRequirements.trim(),
-          location: form.location.trim(),
-          salaryRange: form.salaryRange.trim(),
-          price: form.price,
-          description: form.description.trim(),
-          requirements: form.requirements.trim(),
-          contactInfo: form.contactInfo.trim()
-        }
-      });
-      
-      console.log('发布订单结果:', result);
-      
-      // 检查云函数调用是否成功以及返回结果
-      if (result.result && typeof result.result === 'object' && (result.result as any).success) {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '订单发布成功',
-          theme: 'success'
-        });
-        
-        this.setData({ 
-          showPublishOrderDialog: false,
-          publishingOrder: false
-        });
-        
-        // 刷新订单列表
-        this.resetOrderList();
-        this.loadOrderList();
-      } else {
-        const errorMessage = (result.result && typeof result.result === 'object' ? (result.result as any).message : null) || result.errMsg || '发布订单失败';
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: errorMessage,
-          theme: 'error'
-        });
-        this.setData({ publishingOrder: false });
-      }
-    } catch (error) {
-      console.error('发布订单失败:', error);
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '发布订单失败，请重试',
-        theme: 'error'
-      });
-      this.setData({ publishingOrder: false });
-    }
-  },
-
-  onCancelPublishOrder() {
-    this.setData({ 
-      showPublishOrderDialog: false,
-      publishingOrder: false
-    });
   },
 
   onLogout() {
@@ -1352,12 +1319,28 @@ Page({
       
       orders.push({
         orderId,
+        orderNumber: `ORD${String(index + 1).padStart(6, '0')}`,
+        title: `${subject}家教需求${index + 1}`,
+        studentName: `学生${index + 1}`,
         status,
         subject,
         educationStage: ['小学', '初中', '高中'][index % 3],
+        grade: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'][index % 6],
+        studentGender: ['男', '女', '不限'][index % 3],
+        teacherRequirements: `要求有经验的${subject}老师`,
+        location: `城市${index % 5 + 1}区`,
+        salaryRange: `${80 + index % 50}-${120 + index % 80}元/小时`,
         price: 100 + Math.floor(Math.random() * 200),
+        hoursRequired: 2 + index % 4,
+        description: `需要${subject}家教，学生基础良好，希望提高成绩`,
+        requirements: `有教学经验，耐心负责`,
+        contactInfo: `联系电话：138****${String(1000 + index).slice(-4)}`,
+        publisherId: `user_${index + 1}`,
         publisherName: `用户${index + 1}`,
-        createTime: '2023-08-15'
+        createTime: '2023-08-15',
+        updateTime: '2023-08-15',
+        viewCount: Math.floor(Math.random() * 100),
+        applicantCount: Math.floor(Math.random() * 10)
       });
     }
     
@@ -1394,6 +1377,30 @@ Page({
     }
     
     return posts;
+  },
+
+  // 时间格式化方法
+  formatTime(timestamp: any): string {
+    if (!timestamp) return '';
+    
+    let date: Date;
+    if (timestamp instanceof Date) {
+      date = timestamp;
+    } else if (typeof timestamp === 'number') {
+      date = new Date(timestamp);
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else {
+      return '';
+    }
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
   },
 
   // 页面分享

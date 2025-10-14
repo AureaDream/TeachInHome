@@ -1,0 +1,182 @@
+/* 页面容器 */
+.publish-order-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 表单容器 */
+.form-container {
+  padding: 20rpx;
+  padding-bottom: 120rpx; /* 为底部按钮留出空间 */
+}
+
+/* 发布订单表单样式 */
+.publish-order-form {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.publish-order-form .form-item {
+  margin: 32rpx 0;
+}
+
+.publish-order-form .form-item:first-child {
+  margin-top: 0;
+}
+
+.publish-order-form .form-item:last-child {
+  margin-bottom: 0;
+}
+
+.publish-order-form .form-label {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.publish-order-form .form-label::after {
+  content: " *";
+  color: #ff4d4f;
+  font-size: 28rpx;
+}
+
+/* 移除非必填字段的星号 */
+.form-item:nth-child(7) .form-label::after, /* 教师要求 */
+.form-item:nth-child(11) .form-label::after, /* 具体要求 */
+.form-item:nth-child(12) .form-label::after { /* 联系方式 */
+  display: none;
+}
+
+.publish-order-form .t-input,
+.publish-order-form .t-textarea {
+  margin-bottom: 0;
+}
+
+.publish-order-form .t-picker {
+  width: 100%;
+}
+
+/* 按钮组 */
+.button-group {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background-color: #fff;
+  border-top: 1rpx solid #eee;
+  z-index: 100;
+}
+
+.reset-btn {
+  flex: 1;
+}
+
+.submit-btn {
+  flex: 2;
+}
+
+/* TDesign组件样式覆盖 */
+.t-input,
+.t-textarea {
+  margin-bottom: 0 !important;
+}
+
+.t-input__wrap {
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  background-color: #fafafa;
+}
+
+.t-input__wrap--focused {
+  border-color: #0052d9;
+  background-color: #fff;
+}
+
+.t-textarea__wrap {
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  background-color: #fafafa;
+  min-height: 120rpx;
+}
+
+.t-textarea__wrap--focused {
+  border-color: #0052d9;
+  background-color: #fff;
+}
+
+.t-picker__trigger {
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  background-color: #fafafa;
+}
+
+.t-picker__trigger--active {
+  border-color: #0052d9;
+  background-color: #fff;
+}
+
+/* 导航栏样式 */
+.t-navbar {
+  background-color: #0052d9;
+}
+
+.t-navbar__title {
+  color: #fff;
+  font-weight: 500;
+}
+
+.t-navbar__left {
+  color: #fff;
+}
+
+/* 响应式适配 */
+@media (max-width: 750rpx) {
+  .form-container {
+    padding: 16rpx;
+  }
+  
+  .publish-order-form {
+    padding: 24rpx;
+  }
+  
+  .publish-order-form .form-label {
+    font-size: 30rpx;
+  }
+  
+  .button-group {
+    padding: 16rpx 24rpx;
+    gap: 16rpx;
+  }
+}
+
+/* 加载状态 */
+.t-button--loading {
+  opacity: 0.7;
+}
+
+/* 表单验证错误状态 */
+.form-item--error .t-input__wrap,
+.form-item--error .t-textarea__wrap,
+.form-item--error .t-picker__trigger {
+  border-color: #ff4d4f;
+}
+
+.form-item--error .form-label {
+  color: #ff4d4f;
+}
+
+/* 占位符样式 */
+.t-input__placeholder,
+.t-textarea__placeholder {
+  color: #999;
+  font-size: 28rpx;
+}

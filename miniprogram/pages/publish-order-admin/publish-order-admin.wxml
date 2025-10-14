@@ -1,0 +1,183 @@
+<view class="publish-order-page">
+  <!-- 导航栏 -->
+  <t-navbar title="发布订单" left-arrow bind:left-click="onBack" />
+  
+  <!-- 表单容器 -->
+  <view class="form-container">
+    <view class="publish-order-form">
+      <!-- 订单编号 -->
+      <view class="form-item">
+        <text class="form-label">订单编号</text>
+        <t-input
+          value="{{publishOrderForm.orderNumber}}"
+          placeholder="请输入订单编号"
+          data-field="orderNumber"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 订单标题 -->
+      <view class="form-item">
+        <text class="form-label">订单标题</text>
+        <t-input
+          value="{{publishOrderForm.title}}"
+          placeholder="请输入订单标题"
+          data-field="title"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 学生姓名 -->
+      <view class="form-item">
+        <text class="form-label">学生姓名</text>
+        <t-input
+          value="{{publishOrderForm.studentName}}"
+          placeholder="请输入学生姓名"
+          data-field="studentName"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 科目 -->
+      <view class="form-item">
+        <text class="form-label">科目</text>
+        <t-input
+          value="{{publishOrderForm.subject}}"
+          placeholder="请输入科目，如：数学、英语、语文等"
+          data-field="subject"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 年级 -->
+      <view class="form-item">
+        <text class="form-label">年级</text>
+        <t-input
+          value="{{publishOrderForm.grade}}"
+          placeholder="请输入年级，如：小学、初中、高中等"
+          data-field="grade"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 学生性别 -->
+      <view class="form-item">
+        <text class="form-label">学生性别</text>
+        <t-input
+          value="{{publishOrderForm.studentGender}}"
+          placeholder="请输入学生性别，如：男、女、不限"
+          data-field="studentGender"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 教师要求 -->
+      <view class="form-item">
+        <text class="form-label">教师要求</text>
+        <t-input
+          value="{{publishOrderForm.teacherRequirements}}"
+          placeholder="请输入对教师的要求"
+          data-field="teacherRequirements"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+      
+      <!-- 上课地点 -->
+      <view class="form-item">
+        <text class="form-label">上课地点</text>
+        <t-input
+          value="{{publishOrderForm.location}}"
+          placeholder="请输入上课地点"
+          data-field="location"
+          bind:change="onPublishOrderFormChange"
+          required
+        />
+      </view>
+      
+      <!-- 薪资范围 -->
+      <view class="form-item">
+        <text class="form-label">薪资范围</text>
+        <t-input
+          value="{{publishOrderForm.salaryRange}}"
+          placeholder="请输入薪资范围，如：100-150元/小时"
+          data-field="salaryRange"
+          bind:change="onPublishOrderFormChange"
+          required
+        />
+      </view>
+      
+      <!-- 课时要求 -->
+      <view class="form-item">
+        <text class="form-label">课时要求</text>
+        <t-input
+          value="{{publishOrderForm.hoursRequired}}"
+          placeholder="请输入课时要求（小时）"
+          data-field="hoursRequired"
+          type="number"
+          bind:change="onPublishOrderFormChange"
+          required
+        />
+      </view>
+      
+      <!-- 订单描述 -->
+      <view class="form-item">
+        <text class="form-label">订单描述</text>
+        <t-textarea
+          value="{{publishOrderForm.description}}"
+          placeholder="请输入订单描述"
+          data-field="description"
+          bind:change="onPublishOrderFormChange"
+          maxlength="500"
+          required
+        />
+      </view>
+      
+      <!-- 具体要求 -->
+      <view class="form-item">
+        <text class="form-label">具体要求</text>
+        <t-textarea
+          value="{{publishOrderForm.requirements}}"
+          placeholder="请输入具体要求"
+          data-field="requirements"
+          bind:change="onPublishOrderFormChange"
+          maxlength="300"
+        />
+      </view>
+      
+      <!-- 联系方式 -->
+      <view class="form-item">
+        <text class="form-label">联系方式</text>
+        <t-input
+          value="{{publishOrderForm.contactInfo}}"
+          placeholder="请输入联系方式"
+          data-field="contactInfo"
+          bind:change="onPublishOrderFormChange"
+        />
+      </view>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="button-group">
+      <t-button 
+        theme="light" 
+        size="large" 
+        bind:tap="onResetForm"
+        class="reset-btn"
+      >
+        重置
+      </t-button>
+      <t-button 
+        theme="primary" 
+        size="large" 
+        bind:tap="onConfirmPublishOrder"
+        loading="{{publishingOrder}}"
+        class="submit-btn"
+      >
+        发布订单
+      </t-button>
+    </view>
+  </view>
+  
+  <!-- Toast 提示 -->
+  <t-toast id="t-toast" />
+</view>
