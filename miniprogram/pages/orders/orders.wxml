@@ -36,7 +36,7 @@
     
     <view class="filter-item" bind:tap="onShowSalaryFilter">
       <t-icon name="money" size="32rpx" />
-      <text>报酬</text>
+      <text>薪资范围</text>
       <text class="filter-value" wx:if="{{selectedSalary}}">{{selectedSalary}}</text>
     </view>
     
@@ -70,14 +70,14 @@
           <view class="order-info">
             <view class="order-title">{{item.title}}</view>
             <view class="order-subtitle">{{item.subject}} - {{item.grade}}</view>
-            <view class="order-time">{{item.createTime}}</view>
+            <view class="order-time">发布于 {{item.publishTimeText}}</view>
           </view>
           <view class="order-status">
             <t-tag 
-              theme="{{item.status === 'active' ? 'success' : 'warning'}}"
+              theme="{{item.statusTheme}}"
               variant="light"
             >
-              {{item.status === 'active' ? '可接单' : '已完成'}}
+              {{item.statusText}}
             </t-tag>
           </view>
         </view>
@@ -99,17 +99,16 @@
             <text class="content-text">{{item.requirements}}</text>
           </view>
           
-          <view class="content-row" wx:if="{{item.contactInfo}}">
+          <view class="content-row">
             <t-icon name="call" size="28rpx" color="#666" />
-            <text class="content-text">{{item.contactInfo}}</text>
+            <text class="content-text">接单后可见</text>
           </view>
         </view>
 
         <!-- 订单底部 -->
         <view class="order-footer">
           <view class="salary">
-            <text class="salary-amount">¥{{item.price}}</text>
-            <text class="salary-unit">/小时</text>
+            <text class="salary-amount">{{item.salaryRange || '面议'}}</text>
           </view>
           
           <view class="order-actions">
@@ -123,7 +122,9 @@
               {{item.collected ? '已收藏' : '收藏'}}
             </t-button>
             
+            <!-- 根据订单状态控制按钮交互与文案 -->
             <t-button 
+              wx:if="{{item.status === 'pending'}}"
               size="small" 
               theme="primary" 
               bind:tap="onTakeOrder"
@@ -132,6 +133,7 @@
             >
               立即接单
             </t-button>
+            <t-button wx:else size="small" theme="default" disabled>{{item.statusText}}</t-button>
           </view>
         </view>
       </view>
@@ -153,7 +155,7 @@
   bind:confirm="onConfirmSubject"
   bind:cancel="onCancelSubject"
 >
-  <view class="subject-list">
+  <view class="subject-list" slot="content">
     <t-radio-group value="{{tempSubject}}" bind:change="onSubjectChange">
       <t-radio wx:for="{{subjects}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
     </t-radio-group>
@@ -169,7 +171,7 @@
   bind:confirm="onConfirmDistance"
   bind:cancel="onCancelDistance"
 >
-  <view class="distance-list">
+  <view class="distance-list" slot="content">
     <t-radio-group value="{{tempDistance}}" bind:change="onDistanceChange">
       <t-radio wx:for="{{distances}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
     </t-radio-group>
@@ -179,13 +181,13 @@
 <!-- 报酬筛选弹窗 -->
 <t-dialog
   visible="{{showSalaryDialog}}"
-  title="选择报酬"
+  title="选择薪资范围"
   confirm-btn="确定"
   cancel-btn="取消"
   bind:confirm="onConfirmSalary"
   bind:cancel="onCancelSalary"
 >
-  <view class="salary-list">
+  <view class="salary-list" slot="content">
     <t-radio-group value="{{tempSalary}}" bind:change="onSalaryChange">
       <t-radio wx:for="{{salaryRanges}}" wx:key="*this" value="{{item}}">{{item}}</t-radio>
     </t-radio-group>

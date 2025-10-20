@@ -4,6 +4,7 @@ interface Order {
   subject: string;
   grade: string;
   price: number;
+  salaryRange?: string;
   location: string;
   description: string;
   requirements: string;
@@ -91,22 +92,34 @@ Page({
           break;
         
         case 'accepted':
-          // 获取用户接受的订单（需要从订单申请表中查询）
-          // 这里暂时返回空数组，后续可以扩展
-          this.setData({
-            orders: [],
-            loading: false
-          });
-          return;
+          // 从本地存储读取已接订单ID列表并查询订单
+          {
+            const acceptedIds: string[] = wx.getStorageSync('acceptedOrders') || [];
+            if (!acceptedIds.length) {
+              this.setData({ orders: [], loading: false });
+              return;
+            }
+            const _ = db.command;
+            query = db.collection('orders')
+              .where({ _id: _.in(acceptedIds) })
+              .orderBy('createTime', 'desc');
+          }
+          break;
         
         case 'favorite':
-          // 获取用户收藏的订单（需要从收藏表中查询）
-          // 这里暂时返回空数组，后续可以扩展
-          this.setData({
-            orders: [],
-            loading: false
-          });
-          return;
+          // 从本地存储读取收藏订单ID列表并查询订单
+          {
+            const favoriteIds: string[] = wx.getStorageSync('favoriteOrders') || [];
+            if (!favoriteIds.length) {
+              this.setData({ orders: [], loading: false });
+              return;
+            }
+            const _ = db.command;
+            query = db.collection('orders')
+              .where({ _id: _.in(favoriteIds) })
+              .orderBy('createTime', 'desc');
+          }
+          break;
         
         default:
           query = db.collection('orders')
@@ -119,12 +132,20 @@ Page({
       const result = await query.get();
       
       if (result.data) {
-        // 格式化时间
-        const orders = result.data.map((order: any) => ({
-          ...order,
-          createTime: this.formatTime(order.createTime),
-          updateTime: this.formatTime(order.updateTime)
-        }));
+        // 统一计算薪资范围并格式化时间
+        const orders = result.data.map((order: any) => {
+          const displaySalaryRange = (typeof order.salaryRange === 'string' && order.salaryRange.trim())
+            ? order.salaryRange.trim()
+            : (typeof order.price === 'number' && order.price > 0
+              ? `${order.price}元/小时`
+              : '面议');
+          return {
+            ...order,
+            salaryRange: displaySalaryRange,
+            createTime: this.formatTime(order.createTime),
+            updateTime: this.formatTime(order.updateTime)
+          } as Order;
+        });
         
         this.setData({
           orders: orders

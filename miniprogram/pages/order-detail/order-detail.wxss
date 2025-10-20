@@ -37,6 +37,17 @@
   opacity: 0.8;
 }
 
+/* 新的头部标题与订单编号样式 */
+.order-title {
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.order-number {
+  font-size: 24rpx;
+  opacity: 0.85;
+}
+
 .status-info {
   display: flex;
   justify-content: space-between;

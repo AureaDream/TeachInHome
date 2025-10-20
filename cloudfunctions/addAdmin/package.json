@@ -1,0 +1,9 @@
+{
+  "name": "addAdmin",
+  "version": "1.0.0",
+  "description": "Add a new admin to admin_config collection",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

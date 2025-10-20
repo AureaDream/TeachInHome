@@ -188,7 +188,7 @@
     confirm-btn="确定"
     bind:confirm="onCloseNotificationDialog"
   >
-    <view class="notification-list">
+    <view class="notification-list" slot="content">
       <view wx:if="{{notifications.length === 0}}" class="empty-notification">
         <text>暂无消息通知</text>
       </view>
@@ -215,7 +215,7 @@
     bind:confirm="onConfirmPrivacy"
     bind:cancel="onCancelPrivacy"
   >
-    <view class="privacy-form">
+    <view class="privacy-form" slot="content">
       <t-cell title="公开个人信息" bordered="{{false}}">
         <t-switch slot="note" value="{{privacySettings.publicProfile}}" bind:change="onPrivacyChange" data-field="publicProfile" />
       </t-cell>

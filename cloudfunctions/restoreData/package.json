@@ -1,0 +1,9 @@
+{
+  "name": "restoreData",
+  "version": "1.0.0",
+  "description": "Restore collections from latest backup",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

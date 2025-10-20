@@ -180,18 +180,42 @@
                     </div>
                     <div class="menu-item flex items-center justify-between p-3 rounded-lg">
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h6a2 2 0 002-2V3a2 2 0 012 2v6h-3a2 2 0 00-2 2v3H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                             <div>
-                                <div class="font-medium text-gray-800">认证审核</div>
-                                <div class="text-sm text-gray-500">审核教师认证申请</div>
+                                <div class="font-medium text-gray-800">订单列表</div>
+                                <div class="text-sm text-gray-500">查看所有订单状态</div>
+                                <!-- 状态示例标签 -->
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">待接单</span>
+                                    <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">已接单</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">已完成</span>
+                                    <span class="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">已取消</span>
+                                </div>
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">争议处理</div>
+                                <div class="text-sm text-gray-500">处理订单争议和投诉</div>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">15</span>
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">5</span>
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
@@ -199,22 +223,19 @@
                     </div>
                     <div class="menu-item flex items-center justify-between p-3 rounded-lg">
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                             <div>
-                                <div class="font-medium text-gray-800">违规处理</div>
-                                <div class="text-sm text-gray-500">处理用户举报和违规</div>
+                                <div class="font-medium text-gray-800">财务管理</div>
+                                <div class="text-sm text-gray-500">管理平台收入和提现</div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">3</span>
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -228,26 +249,6 @@
                     </div>
                 </div>
                 <div class="p-2">
-                    <div class="menu-item flex items-center justify-between p-3 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a2 2 0 002 2h6a2 2 0 002-2V3a2 2 0 012 2v6h-3a2 2 0 00-2 2v3H6a2 2 0 01-2-2V5zm8 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-800">订单列表</div>
-                                <div class="text-sm text-gray-500">查看所有订单状态</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded-full">2156</span>
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </div>
-                    </div>
                     <div class="menu-item flex items-center justify-between p-3 rounded-lg">
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">

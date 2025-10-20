@@ -7,7 +7,7 @@
     <!-- 帖子头部 -->
     <view class="post-header">
       <view class="author-info">
-        <t-avatar src="{{post.author.avatar}}" size="80rpx" />
+        <t-avatar image="{{post.author.avatar}}" size="80rpx" />
         <view class="author-details">
           <text class="author-name">{{post.author.name}}</text>
           <text class="post-time">{{post.createTime}}</text>
@@ -103,7 +103,7 @@
         class="comment-item"
       >
         <view class="comment-header">
-          <t-avatar src="{{item.author.avatar}}" size="60rpx" />
+          <t-avatar image="{{item.author.avatar}}" size="60rpx" />
           <view class="comment-author">
             <text class="author-name">{{item.author.name}}</text>
             <text class="comment-time">{{item.createTime}}</text>

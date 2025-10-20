@@ -252,11 +252,11 @@
                 name="{{item.status === 'normal' ? 'close-circle' : 'check-circle'}}" 
                 size="44rpx" 
                 color="{{item.status === 'normal' ? '#ff4d4f' : '#00a870'}}" 
-                bind:tap="onTogglePostStatus" 
+                catch:tap="onTogglePostStatus" 
                 data-id="{{item.postId}}" 
                 data-status="{{item.status}}"
               />
-              <t-icon name="delete" size="44rpx" color="#ff4d4f" bind:tap="onDeletePost" data-id="{{item.postId}}" />
+              <t-icon name="delete" size="44rpx" color="#ff4d4f" catch:tap="onDeletePost" data-id="{{item.postId}}" />
             </view>
           </view>
         </view>
@@ -381,7 +381,8 @@
     bind:cancel="onCancelAddAdmin"
   >
     <view class="dialog-content" slot="content">
-      <t-input label="用户ID" placeholder="请输入用户ID" value="{{addAdminForm.userId}}" bind:change="onAddAdminFormChange" data-field="userId" />
+      <t-input label="用户名" placeholder="请输入用户名" value="{{addAdminForm.username}}" bind:change="onAddAdminFormChange" data-field="username" />
+      <t-input label="密码" type="password" placeholder="请输入密码" value="{{addAdminForm.password}}" bind:change="onAddAdminFormChange" data-field="password" />
     </view>
   </t-dialog>
 

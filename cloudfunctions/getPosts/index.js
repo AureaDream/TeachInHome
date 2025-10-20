@@ -50,7 +50,7 @@ exports.main = async (event, context) => {
       .where(whereCondition)
       .orderBy('createTime', 'desc')
       .skip((page - 1) * pageSize)
-      .limit(pageSize)
+      .limit(pageSize + 1)
       .get();
     
     console.log('6. 帖子查询结果:', {
@@ -84,7 +84,8 @@ exports.main = async (event, context) => {
     
     // 处理帖子数据
     console.log('10. 开始处理帖子数据...');
-    const posts = postsResult.data.map(post => {
+    const rawPosts = postsResult.data.slice(0, pageSize);
+    const posts = rawPosts.map(post => {
       // 检查当前用户是否点赞了这个帖子
       const isLiked = currentUserId && post.likedBy && post.likedBy.includes(currentUserId);
       
@@ -119,34 +120,21 @@ exports.main = async (event, context) => {
       } : '无帖子'
     });
 
-    // 获取总数用于判断是否还有更多数据
-    console.log('12. 开始查询帖子总数...');
-    const totalResult = await db.collection('posts')
-      .where(whereCondition)
-      .count();
-    
-    console.log('13. 帖子总数查询结果:', {
-      总数: totalResult.total,
-      当前页: page,
-      每页数量: pageSize,
-      是否还有更多: (page * pageSize) < totalResult.total
-    });
-    
-    const hasMore = (page * pageSize) < totalResult.total;
+    // 使用 pageSize+1 判断是否还有更多，避免全表 count
+    const hasMore = postsResult.data.length > pageSize;
     
     const result = {
       success: true,
       data: {
         posts,
         hasMore,
-        total: totalResult.total
+        total: undefined
       }
     };
     
     console.log('✅ getPosts 云函数执行成功:', {
       返回帖子数量: posts.length,
-      是否还有更多: hasMore,
-      总数: totalResult.total
+      是否还有更多: hasMore
     });
     console.log('=== getPosts 云函数执行完成 ===');
     

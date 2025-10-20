@@ -53,8 +53,8 @@
             <t-icon name="location" size="28rpx" color="#666" />
             <text>{{item.location}}</text>
           </view>
-          <view wx:if="{{item.contactInfo}}" class="order-contact">
-            <text class="label">联系方式：</text>{{item.contactInfo}}
+          <view class="order-contact">
+            <text class="label">联系方式：</text>接单后可见
           </view>
         </view>
 
@@ -71,8 +71,7 @@
             </view>
           </view>
           <view class="order-price">
-            <text class="price-value">¥{{item.price}}</text>
-            <text class="price-unit">/小时</text>
+            <text class="price-value">{{item.salaryRange || (item.price ? (item.price + '元/小时') : '面议')}}</text>
           </view>
         </view>
       </view>

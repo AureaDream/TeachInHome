@@ -122,7 +122,10 @@ Page({
 
   // 点赞评论
   async onLikeComment(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const comment = e.currentTarget.dataset.comment;
     
     try {

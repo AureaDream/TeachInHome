@@ -88,7 +88,8 @@ interface EditOrderForm {
 }
 
 interface AddAdminForm {
-  userId: string;
+  username: string;
+  password: string;
 }
 
 interface PasswordForm {
@@ -211,7 +212,8 @@ Page({
     
     showAddAdminDialog: false,
     addAdminForm: {
-      userId: ''
+      username: '',
+      password: ''
     } as AddAdminForm,
     
     showChangePasswordDialog: false,
@@ -232,8 +234,19 @@ Page({
   onShow() {
     // 刷新当前标签页数据
     this.refreshCurrentTab();
+    // 开启订单集合实时监听
+    startOrderWatcher.call(this);
   },
 
+  onHide() {
+    // 关闭订单集合实时监听
+    stopOrderWatcher.call(this);
+  },
+
+  onUnload() {
+    // 关闭订单集合实时监听
+    stopOrderWatcher.call(this);
+  },
   onPullDownRefresh() {
     this.refreshCurrentTab();
     setTimeout(() => {
@@ -257,18 +270,35 @@ Page({
   // 检查管理员状态
   checkAdminStatus() {
     const userInfo = wx.getStorageSync('userInfo');
-    if (!userInfo || userInfo.role !== 'admin') {
-      wx.showModal({
-        title: '提示',
-        content: '您没有管理员权限',
-        showCancel: false,
-        success: () => {
-          wx.redirectTo({
-            url: '/pages/login/login'
-          });
-        }
-      });
+    console.log('检查管理员状态，用户信息:', userInfo);
+    
+    if (!userInfo) {
+      console.log('用户信息不存在，跳转到登录页');
+      this.redirectToLogin();
+      return;
     }
+    
+    // 检查是否为管理员登录
+    if (userInfo.loginType !== 'admin' && userInfo.role !== 'admin' && !userInfo.isAdmin) {
+      console.log('用户不是管理员，跳转到登录页');
+      this.redirectToLogin();
+      return;
+    }
+    
+    console.log('管理员身份验证通过');
+  },
+
+  redirectToLogin() {
+    wx.showModal({
+      title: '提示',
+      content: '您没有管理员权限，请使用管理员账号登录',
+      showCancel: false,
+      success: () => {
+        wx.redirectTo({
+          url: '/pages/login/login'
+        });
+      }
+    });
   },
 
   // 刷新当前标签页数据
@@ -349,17 +379,74 @@ Page({
     
     this.setData({ loading: true });
     
-    // 模拟加载用户列表
-    setTimeout(() => {
-      // 生成模拟数据
-      const users = this.generateMockUsers(userPage, userPageSize, searchValue, userStatusValue, userRoleValue);
-      
-      this.setData({
-        userList: [...this.data.userList, ...users],
-        hasMoreUsers: users.length === userPageSize,
-        loading: false
+    // 获取当前管理员信息，使用与checkAdminStatus一致的验证逻辑
+    const userInfo = wx.getStorageSync('userInfo');
+    console.log('loadUserList - 完整的userInfo:', JSON.stringify(userInfo, null, 2));
+    
+    if (!userInfo || 
+        !(userInfo.loginType === 'admin' || 
+          userInfo.role === 'admin' || 
+          userInfo.isAdmin === true)) {
+      console.log('用户管理 - 身份验证失败:', userInfo);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '管理员身份验证失败',
+        theme: 'error'
       });
-    }, 1000);
+      this.setData({ loading: false });
+      this.redirectToLogin();
+      return;
+    }
+    
+    const currentAdminUsername = userInfo.username || 'admin000';
+    console.log('loadUserList - 传递给云函数的currentAdminUsername:', currentAdminUsername);
+    console.log('loadUserList - userInfo.username:', userInfo.username);
+    console.log('loadUserList - userInfo.nickName:', userInfo.nickName);
+    
+    // 调用云函数获取用户列表
+    wx.cloud.callFunction({
+      name: 'getUsers',
+      data: {
+        page: userPage,
+        pageSize: userPageSize,
+        searchValue: searchValue,
+        statusValue: userStatusValue,
+        roleValue: userRoleValue,
+        currentAdminUsername: currentAdminUsername
+      },
+      success: (res) => {
+        console.log('获取用户列表成功:', res);
+        
+        if (res.result && (res.result as CloudFunctionResult).success) {
+          const { users, hasMore } = (res.result as CloudFunctionResult).data as { users: User[], hasMore: boolean };
+          
+          this.setData({
+            userList: [...this.data.userList, ...users],
+            hasMoreUsers: hasMore,
+            loading: false
+          });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: (res.result as CloudFunctionResult)?.message || '获取用户列表失败',
+            theme: 'error'
+          });
+          this.setData({ loading: false });
+        }
+      },
+      fail: (err) => {
+        console.error('获取用户列表失败:', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '获取用户列表失败',
+          theme: 'error'
+        });
+        this.setData({ loading: false });
+      }
+    });
   },
 
   loadMoreUsers() {
@@ -397,7 +484,10 @@ Page({
   },
 
   onEditUser(e: any) {
-    e.stopPropagation();
+    // TDesign 组件的事件对象可能不包含 stopPropagation 方法
+    if (e && e.stopPropagation && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     const userId = e.currentTarget.dataset.id;
     const user = this.data.userList.find(u => u.userId === userId);
     
@@ -469,31 +559,80 @@ Page({
       return;
     }
     
-    // 更新用户信息
-    const userList = this.data.userList.map(user => {
-      if (user.userId === editUserForm.userId) {
-        return {
-          ...user,
-          nickName: editUserForm.nickName,
-          phone: editUserForm.phone || undefined,
-          email: editUserForm.email || undefined,
+    // 获取当前管理员信息
+    const userInfo = wx.getStorageSync('userInfo');
+    if (!userInfo || !userInfo.username) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '管理员身份验证失败',
+        theme: 'error'
+      });
+      return;
+    }
+    
+    // 调用云函数更新用户信息
+    wx.cloud.callFunction({
+      name: 'updateUser',
+      data: {
+        userId: editUserForm.userId,
+        updateData: {
+          nickName: editUserForm.nickName.trim(),
+          phone: editUserForm.phone || '',
+          email: editUserForm.email || '',
           role: editUserForm.role,
-          status: editUserForm.status as 'active' | 'disabled'
-        };
+          status: editUserForm.status
+        },
+        currentAdminUsername: userInfo.username
+      },
+      success: (res) => {
+        console.log('更新用户信息成功:', res);
+        
+        if (res.result && (res.result as CloudFunctionResult).success) {
+          // 更新本地用户列表
+          const userList = this.data.userList.map(user => {
+            if (user.userId === editUserForm.userId) {
+              return {
+                ...user,
+                nickName: editUserForm.nickName,
+                phone: editUserForm.phone || '',
+                email: editUserForm.email || '',
+                role: editUserForm.role,
+                status: editUserForm.status as 'active' | 'disabled'
+              };
+            }
+            return user;
+          });
+          
+          this.setData({
+            userList,
+            showUserEditDialog: false
+          });
+          
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: '用户信息已更新',
+            theme: 'success'
+          });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: (res.result as CloudFunctionResult)?.message || '更新用户信息失败',
+            theme: 'error'
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('更新用户信息失败:', err);
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '更新用户信息失败',
+          theme: 'error'
+        });
       }
-      return user;
-    });
-    
-    this.setData({
-      userList,
-      showUserEditDialog: false
-    });
-    
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '用户信息已更新',
-      theme: 'success'
     });
   },
 
@@ -502,7 +641,6 @@ Page({
   },
 
   onToggleUserStatus(e: any) {
-    e.stopPropagation();
     const userId = e.currentTarget.dataset.id;
     const status = e.currentTarget.dataset.status as 'active' | 'disabled';
     const newStatus = status === 'active' ? 'disabled' : 'active';
@@ -512,21 +650,66 @@ Page({
       content: `确定要${newStatus === 'active' ? '启用' : '禁用'}该用户吗？`,
       success: (res) => {
         if (res.confirm) {
-          // 更新用户状态
-          const userList = this.data.userList.map(user => {
-            if (user.userId === userId) {
-              return { ...user, status: newStatus as 'active' | 'disabled' };
+          // 获取当前管理员信息
+          const userInfo = wx.getStorageSync('userInfo');
+          if (!userInfo || !userInfo.username) {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '管理员身份验证失败',
+              theme: 'error'
+            });
+            return;
+          }
+          
+          // 调用云函数更新用户状态
+          wx.cloud.callFunction({
+            name: 'updateUser',
+            data: {
+              userId: userId,
+              updateData: {
+                status: newStatus
+              },
+              currentAdminUsername: userInfo.username
+            },
+            success: (res) => {
+              console.log('更新用户状态成功:', res);
+              
+              if (res.result && (res.result as CloudFunctionResult).success) {
+                // 更新本地用户列表
+                const userList = this.data.userList.map(user => {
+                  if (user.userId === userId) {
+                    return { ...user, status: newStatus as 'active' | 'disabled' };
+                  }
+                  return user;
+                });
+                
+                this.setData({ userList });
+                
+                Toast({
+                  context: this,
+                  selector: '#t-toast',
+                  message: `用户已${newStatus === 'active' ? '启用' : '禁用'}`,
+                  theme: 'success'
+                });
+              } else {
+                Toast({
+                  context: this,
+                  selector: '#t-toast',
+                  message: (res.result as CloudFunctionResult)?.message || '操作失败',
+                  theme: 'error'
+                });
+              }
+            },
+            fail: (err) => {
+              console.error('更新用户状态失败:', err);
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: '操作失败',
+                theme: 'error'
+              });
             }
-            return user;
-          });
-          
-          this.setData({ userList });
-          
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: `用户已${newStatus === 'active' ? '启用' : '禁用'}`,
-            theme: 'success'
           });
         }
       }
@@ -580,11 +763,14 @@ Page({
         ];
       }
       
-      // 应用查询条件
-      if (Object.keys(whereConditions).length > 0) {
-        query = query.where(whereConditions);
+      // 应用查询条件，如果没有其他条件，至少添加一个基础条件避免全量查询
+      if (Object.keys(whereConditions).length === 0) {
+        // 添加一个基础条件，只查询有效的订单（排除可能的测试数据）
+        whereConditions._id = db.command.exists(true);
       }
       
+      query = query.where(whereConditions);
+
       // 分页查询
       const result = await query
         .orderBy('createTime', 'desc')
@@ -923,21 +1109,55 @@ Page({
   },
 
   loadPostList() {
-    const { postPage, postPageSize, searchValue, postStatusValue, postCategoryValue } = this.data;
-    
+    const { postPage, postPageSize, searchValue, postCategoryValue } = this.data;
     this.setData({ loading: true });
-    
-    // 模拟加载帖子列表
-    setTimeout(() => {
-      // 生成模拟数据
-      const posts = this.generateMockPosts(postPage, postPageSize, searchValue, postStatusValue, postCategoryValue);
-      
-      this.setData({
-        postList: [...this.data.postList, ...posts],
-        hasMorePosts: posts.length === postPageSize,
-        loading: false
+
+    // 通过云函数获取帖子列表
+    wx.cloud
+      .callFunction({
+        name: 'getPosts',
+        data: {
+          page: postPage,
+          pageSize: postPageSize,
+          category: postCategoryValue,
+          searchValue: searchValue || ''
+        }
+      })
+      .then((res: any) => {
+        const result = res?.result;
+        if (!result || !result.success) {
+          throw new Error(result?.message || '获取帖子列表失败');
+        }
+
+        const cloudPosts = result.data?.posts || [];
+        const mappedPosts: Post[] = cloudPosts.map((p: any) => ({
+          postId: p.id,
+          title: p.title,
+          content: p.summary || p.content || '',
+          authorName: (p.author && p.author.name) || '未知用户',
+          status: 'normal',
+          viewCount: p.viewCount || 0,
+          commentCount: p.commentCount || 0,
+          likeCount: p.likeCount || 0,
+          createTime: p.createTime || ''
+        }));
+
+        this.setData({
+          postList: [...this.data.postList, ...mappedPosts],
+          hasMorePosts: !!result.data?.hasMore,
+          loading: false
+        });
+      })
+      .catch((error: any) => {
+        console.error('加载帖子失败:', error);
+        this.setData({ loading: false });
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: error?.message || '加载帖子失败',
+          theme: 'error'
+        });
       });
-    }, 1000);
   },
 
   loadMorePosts() {
@@ -1038,49 +1258,121 @@ Page({
   },
 
   // 系统设置相关
-  loadStatistics() {
-    // 模拟加载统计数据
-    setTimeout(() => {
+  async loadStatistics() {
+    try {
+      const db = wx.cloud.database();
+      const _ = db.command;
+      const [usersCountRes, ordersCountRes, postsCountRes] = await Promise.all([
+        db.collection('users').where({ _id: _.exists(true) }).count(),
+        db.collection('orders').where({ _id: _.exists(true) }).count(),
+        db.collection('posts').where({ _id: _.exists(true) }).count()
+      ]);
+
       this.setData({
         statistics: {
-          userCount: 128,
-          orderCount: 356,
-          postCount: 215
+          userCount: usersCountRes.total || 0,
+          orderCount: ordersCountRes.total || 0,
+          postCount: postsCountRes.total || 0
         }
       });
-    }, 500);
-  },
-
-  loadSettings() {
-    // 模拟加载系统设置
-    const settings = wx.getStorageSync('adminSettings');
-    if (settings) {
-      this.setData({ settings });
+    } catch (error) {
+      console.error('加载统计数据失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '统计数据加载失败',
+        theme: 'error'
+      });
     }
   },
 
-  onSettingChange(e: any) {
+  async loadSettings() {
+    try {
+      const db = wx.cloud.database();
+      const res = await db.collection('settings').where({ key: 'global' }).get();
+      if (res.data && res.data.length > 0) {
+        const doc = res.data[0];
+        this.setData({
+          settings: {
+            enableRegister: !!doc.enableRegister,
+            enableOrderPublish: !!doc.enableOrderPublish,
+            enablePostPublish: !!doc.enablePostPublish,
+            enableResumeGenerate: !!doc.enableResumeGenerate
+          }
+        });
+        wx.setStorageSync('adminSettings', this.data.settings);
+      } else {
+        const defaultSettings = {
+          key: 'global',
+          enableRegister: true,
+          enableOrderPublish: true,
+          enablePostPublish: true,
+          enableResumeGenerate: true,
+          updatedAt: new Date()
+        };
+        await db.collection('settings').add({ data: defaultSettings });
+        this.setData({
+          settings: {
+            enableRegister: true,
+            enableOrderPublish: true,
+            enablePostPublish: true,
+            enableResumeGenerate: true
+          }
+        });
+        wx.setStorageSync('adminSettings', this.data.settings);
+      }
+    } catch (error) {
+      console.error('加载系统设置失败:', error);
+    }
+  },
+
+  async onSettingChange(e: any) {
     const key = e.currentTarget.dataset.key;
     const value = e.detail.value;
     
-    this.setData({
-      [`settings.${key}`]: value
-    }, () => {
-      // 保存设置
-      wx.setStorageSync('adminSettings', this.data.settings);
-      
+    this.setData({ [`settings.${key}`]: value });
+    wx.setStorageSync('adminSettings', this.data.settings);
+
+    try {
+      const db = wx.cloud.database();
+      const res = await db.collection('settings').where({ key: 'global' }).get();
+      if (res.data && res.data.length > 0) {
+        const docRecord = res.data[0];
+        const docId = docRecord && docRecord._id ? String(docRecord._id) : '';
+        if (docId) {
+          await db.collection('settings').doc(docId).update({
+            data: { [key]: value, updatedAt: new Date() }
+          });
+        } else {
+          await db.collection('settings').add({
+            data: { key: 'global', [key]: value, updatedAt: new Date() }
+          });
+        }
+      } else {
+        await db.collection('settings').add({
+          data: { key: 'global', [key]: value, updatedAt: new Date() }
+        });
+      }
       Toast({
         context: this,
         selector: '#t-toast',
         message: '设置已保存',
         theme: 'success'
       });
-    });
+    } catch (error) {
+      console.error('更新设置失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '设置更新失败',
+        theme: 'error'
+      });
+    }
   },
 
   onAddAdmin() {
     this.setData({
-      addAdminForm: { userId: '' },
+      addAdminForm: { username: '', password: '' },
       showAddAdminDialog: true
     });
   },
@@ -1094,32 +1386,39 @@ Page({
 
   onConfirmAddAdmin() {
     const { addAdminForm } = this.data;
+    const username = (addAdminForm as AddAdminForm).username?.trim();
+    const password = (addAdminForm as AddAdminForm).password?.trim();
     
-    if (!addAdminForm.userId.trim()) {
+    if (!username || !password) {
       Toast({
         context: this,
         selector: '#t-toast',
-        message: '请输入用户ID',
+        message: '请填写用户名和密码',
         theme: 'warning'
       });
       return;
     }
     
-    // 模拟添加管理员
-    setTimeout(() => {
-      this.setData({ showAddAdminDialog: false });
-      
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '管理员添加成功',
-        theme: 'success'
-      });
-      
-      // 刷新用户列表
-      this.resetUserList();
-      this.loadUserList();
-    }, 500);
+    wx.cloud.callFunction({
+      name: 'addAdmin',
+      data: { username, password },
+      success: (res) => {
+        const result = res.result as CloudFunctionResult;
+        if (result && result.success) {
+          this.setData({ showAddAdminDialog: false });
+          Toast({ context: this, selector: '#t-toast', message: '管理员添加成功', theme: 'success' });
+          // 可选：刷新用户列表
+          this.resetUserList();
+          this.loadUserList();
+        } else {
+          Toast({ context: this, selector: '#t-toast', message: result?.message || '添加管理员失败', theme: 'error' });
+        }
+      },
+      fail: (err) => {
+        console.error('添加管理员失败:', err);
+        Toast({ context: this, selector: '#t-toast', message: '添加管理员失败', theme: 'error' });
+      }
+    });
   },
 
   onCancelAddAdmin() {
@@ -1221,12 +1520,19 @@ Page({
   },
 
   onBackupData() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '数据备份成功',
-      theme: 'success'
-    });
+    wx.cloud.callFunction({ name: 'backupData' })
+      .then((res) => {
+        const result = res.result as CloudFunctionResult;
+        if (result && result.success) {
+          Toast({ context: this, selector: '#t-toast', message: '数据备份成功', theme: 'success' });
+        } else {
+          Toast({ context: this, selector: '#t-toast', message: result?.message || '数据备份失败', theme: 'error' });
+        }
+      })
+      .catch((err) => {
+        console.error('数据备份失败:', err);
+        Toast({ context: this, selector: '#t-toast', message: '数据备份失败', theme: 'error' });
+      });
   },
 
   onRestoreData() {
@@ -1235,12 +1541,20 @@ Page({
       content: '恢复数据将覆盖当前数据，是否继续？',
       success: (res) => {
         if (res.confirm) {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '数据恢复成功',
-            theme: 'success'
-          });
+          wx.cloud.callFunction({ name: 'restoreData' })
+            .then((resp) => {
+              const result = resp.result as CloudFunctionResult;
+              if (result && result.success) {
+                Toast({ context: this, selector: '#t-toast', message: '数据恢复成功', theme: 'success' });
+                this.refreshCurrentTab();
+              } else {
+                Toast({ context: this, selector: '#t-toast', message: result?.message || '数据恢复失败', theme: 'error' });
+              }
+            })
+            .catch((error) => {
+              console.error('数据恢复失败:', error);
+              Toast({ context: this, selector: '#t-toast', message: '数据恢复失败', theme: 'error' });
+            });
         }
       }
     });
@@ -1254,6 +1568,14 @@ Page({
         if (res.confirm) {
           // 清除缓存
           wx.clearStorageSync();
+          this.setData({
+            settings: {
+              enableRegister: true,
+              enableOrderPublish: true,
+              enablePostPublish: true,
+              enableResumeGenerate: true
+            }
+          });
           
           Toast({
             context: this,
@@ -1411,3 +1733,44 @@ Page({
     };
   }
 });
+
+
+// 启动订单集合实时监听
+function startOrderWatcher(this: any) {
+  try {
+    // 如已有监听，先关闭避免重复
+    if ((this as any).orderWatcher && typeof (this as any).orderWatcher.close === 'function') {
+      (this as any).orderWatcher.close();
+    }
+    const db = wx.cloud.database();
+    // 监听 orders 集合的变更（不做复杂筛选，确保任何状态更新都能捕捉到）
+    (this as any).orderWatcher = db.collection('orders').watch({
+      onChange: (snapshot: any) => {
+        console.log('orders watch onChange:', snapshot);
+        // 仅当当前标签是订单时刷新，避免打断其他标签的操作
+        if (this.data.activeTab === 'orders') {
+          // 保持筛选与分页一致，采用列表刷新策略
+          this.resetOrderList();
+          this.loadOrderList();
+        }
+      },
+      onError: (err: any) => {
+        console.error('orders watch error:', err);
+      }
+    });
+  } catch (e) {
+    console.warn('启动订单实时监听失败，可能当前环境不支持 watch:', e);
+  }
+}
+
+// 停止订单集合实时监听
+function stopOrderWatcher(this: any) {
+  try {
+    if ((this as any).orderWatcher && typeof (this as any).orderWatcher.close === 'function') {
+      (this as any).orderWatcher.close();
+      (this as any).orderWatcher = null;
+    }
+  } catch (e) {
+    console.warn('关闭订单实时监听时出现问题:', e);
+  }
+}

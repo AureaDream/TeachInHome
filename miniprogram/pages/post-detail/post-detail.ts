@@ -56,6 +56,46 @@ Page({
     ]
   },
 
+  // 解析头像URL：支持云存储 fileID、http(s) 链接、或本地默认头像
+  async resolveAvatarUrl(raw?: string): Promise<string> {
+    const fallback = '/images/avatar-default.svg';
+    if (!raw || typeof raw !== 'string' || raw.trim() === '') return fallback;
+    const val = raw.trim();
+    // 已是 http(s) 或本地路径
+    if (/^https?:\/\//.test(val) || val.startsWith('/')) return val;
+    // 云存储 fileID -> 临时可访问链接
+    if (val.startsWith('cloud://')) {
+      try {
+        const result = await wx.cloud.getTempFileURL({ fileList: [val] });
+        const info = result && result.fileList && result.fileList[0];
+        if (info && info.status === 0 && info.tempFileURL) return info.tempFileURL;
+      } catch (e) {
+        console.error('获取头像临时URL失败:', e);
+      }
+      return fallback;
+    }
+    // 其他不识别的格式，使用默认头像
+    return fallback;
+  },
+
+  async preparePostAvatar(post: any): Promise<any> {
+    if (!post || !post.author) return post;
+    const raw = post.author.avatar || post.author.avatarUrl || '';
+    post.author.avatar = await this.resolveAvatarUrl(raw);
+    return post;
+  },
+
+  async prepareCommentAvatars(comments: any[]): Promise<any[]> {
+    if (!Array.isArray(comments)) return comments;
+    const mapped = await Promise.all(comments.map(async (c) => {
+      if (!c.author) c.author = {};
+      const raw = c.author.avatar || c.author.avatarUrl || '';
+      c.author.avatar = await this.resolveAvatarUrl(raw);
+      return c;
+    }));
+    return mapped;
+  },
+
   onLoad(options: any) {
     const { id, focus } = options;
     if (id) {
@@ -83,10 +123,14 @@ Page({
       success: (res: any) => {
         if (res.result && typeof res.result === 'object' && (res.result as any).success) {
           const post = (res.result as any).data;
-          
-          this.setData({
-            post: post,
-            loading: false
+          // 规范化作者头像，确保 t-avatar 能正确渲染
+          this.preparePostAvatar(post).then((processed) => {
+            this.setData({
+              post: processed,
+              loading: false
+            });
+          }).catch(() => {
+            this.setData({ post, loading: false });
           });
         } else {
           Toast({
@@ -130,12 +174,21 @@ Page({
         if (res.result && typeof res.result === 'object' && (res.result as any).success) {
           const newComments = (res.result as any).data.comments || [];
           const hasMore = (res.result as any).data.hasMore || false;
-          
-          this.setData({
-            comments: this.data.commentsPage === 1 ? newComments : [...this.data.comments, ...newComments],
-            hasMoreComments: hasMore,
-            commentsPage: this.data.commentsPage + 1,
-            loadingComments: false
+          // 规范化评论者头像
+          this.prepareCommentAvatars(newComments).then((processed) => {
+            this.setData({
+              comments: this.data.commentsPage === 1 ? processed : [...this.data.comments, ...processed],
+              hasMoreComments: hasMore,
+              commentsPage: this.data.commentsPage + 1,
+              loadingComments: false
+            });
+          }).catch(() => {
+            this.setData({
+              comments: this.data.commentsPage === 1 ? newComments : [...this.data.comments, ...newComments],
+              hasMoreComments: hasMore,
+              commentsPage: this.data.commentsPage + 1,
+              loadingComments: false
+            });
           });
         } else {
           Toast({
