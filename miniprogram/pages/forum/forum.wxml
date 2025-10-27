@@ -110,7 +110,7 @@
             <text class="stat-text">{{item.commentCount}}</text>
           </view>
           <view class="stat-item">
-            <t-icon name="view" size="28rpx" color="#999" />
+            <t-icon name="browse" size="28rpx" color="#999" />
             <text class="stat-text">{{item.viewCount}}</text>
           </view>
         </view>

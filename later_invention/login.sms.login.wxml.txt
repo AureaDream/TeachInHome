@@ -1,0 +1,55 @@
+<!-- 提取自 miniprogram/pages/login/login.wxml 的短信登录相关UI备份 -->
+
+<!-- 分割线 -->
+<view class="divider">
+  <t-divider>或</t-divider>
+</view>
+
+<!-- 手机号登录 -->
+<view class="phone-login">
+  <view class="input-group">
+    <t-input
+      placeholder="请输入手机号"
+      type="number"
+      maxlength="11"
+      value="{{phone}}"
+      bind:change="onPhoneChange"
+      prefix-icon="mobile"
+    />
+  </view>
+  
+  <view class="input-group">
+    <t-input
+      placeholder="请输入验证码"
+      type="number"
+      maxlength="6"
+      value="{{code}}"
+      bind:change="onCodeChange"
+      prefix-icon="secured"
+    >
+      <view slot="suffix">
+        <t-button
+          theme="outline"
+          size="small"
+          bind:tap="onSendCode"
+          disabled="{{codeDisabled}}"
+        >
+          {{codeText}}
+        </t-button>
+      </view>
+    </t-input>
+  </view>
+
+  <view class="login-btn">
+    <t-button 
+      theme="primary" 
+      size="large" 
+      block
+      bind:tap="onPhoneLogin"
+      loading="{{phoneLoading}}"
+      disabled="{{!phone || !code}}"
+    >
+      登录
+    </t-button>
+  </view>
+</view>

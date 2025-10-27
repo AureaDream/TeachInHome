@@ -1,4 +1,5 @@
 import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
+import AmapUtil from '../../utils/amap';
 
 interface Order {
   title: string;
@@ -25,6 +26,7 @@ interface Order {
   publishTimeText?: string;
   latitude?: number;
   longitude?: number;
+  distanceText?: string;
 }
 
 Page({
@@ -33,6 +35,7 @@ Page({
     order: null as Order | null,
     loading: true,
     isFavorite: false,
+    userLocation: null as any,
     // 移除本地 isAccepted，改用云端状态判断
     showConfirmDialog: false,
     showMapDialog: false,
@@ -140,6 +143,9 @@ Page({
           latitude: typeof d.latitude === 'number' ? d.latitude : undefined,
           longitude: typeof d.longitude === 'number' ? d.longitude : undefined
         };
+
+        // 计算距离信息
+        this.calculateDistance(order);
 
         const mapLocation = (order.latitude && order.longitude) ? {
           latitude: order.latitude,
@@ -514,6 +520,35 @@ Page({
     if (val === 'male' || val === 'm' || val === '1' || raw === '男') return '男';
     if (val === 'female' || val === 'f' || val === '2' || raw === '女') return '女';
     return '未知';
+  },
+
+  // 计算距离信息
+  async calculateDistance(order: Order) {
+    try {
+      // 获取用户位置
+      let userLocation = this.data.userLocation;
+      if (!userLocation) {
+        const amapUtil = AmapUtil.getInstance();
+        userLocation = await amapUtil.getCurrentLocation();
+        this.setData({ userLocation });
+      }
+
+      // 如果订单有位置信息，计算距离
+      if (order.latitude && order.longitude && userLocation) {
+        const amapUtil = AmapUtil.getInstance();
+        const distanceResult = await amapUtil.calculateDistance(
+          { latitude: userLocation.latitude, longitude: userLocation.longitude },
+          { latitude: order.latitude, longitude: order.longitude }
+        );
+        
+        order.distance = distanceResult.distance;
+        order.distanceText = amapUtil.formatDistance(distanceResult.distance);
+        
+        this.setData({ order });
+      }
+    } catch (error) {
+      console.log('计算距离失败:', error);
+    }
   },
 
   // 页面分享

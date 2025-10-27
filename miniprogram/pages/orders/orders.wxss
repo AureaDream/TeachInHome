@@ -16,6 +16,28 @@
   border-bottom: 1rpx solid #eee;
 }
 
+/* 定位栏样式 */
+.location-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  background: #f8f9fa;
+  border-bottom: 1rpx solid #e5e5e5;
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.location-text {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
 /* 筛选器 */
 .filter-bar {
   display: flex;
@@ -120,6 +142,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 12rpx;
+  position: relative;
 }
 
 .content-row:last-child {
@@ -127,17 +150,18 @@
 }
 
 .content-text {
-  flex: 1;
   margin-left: 12rpx;
   font-size: 28rpx;
   color: #666;
+  flex: 1;
   line-height: 1.4;
 }
 
-.distance {
+.distance-text {
+  margin-left: auto;
   font-size: 24rpx;
   color: #0052d9;
-  margin-left: 20rpx;
+  font-weight: 500;
 }
 
 /* 订单底部 */

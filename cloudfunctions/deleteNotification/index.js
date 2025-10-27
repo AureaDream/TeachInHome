@@ -29,7 +29,7 @@ exports.main = async (event, context) => {
     // 获取用户信息
     const userResult = await db.collection('users')
       .where({
-        openid: wxContext.OPENID
+        _openid: wxContext.OPENID
       })
       .get()
 

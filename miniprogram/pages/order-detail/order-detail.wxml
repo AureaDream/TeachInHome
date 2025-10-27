@@ -47,9 +47,9 @@
           <t-icon name="location" size="36rpx" color="#0052d9" bind:tap="onViewLocation" />
         </view>
       </view>
-      <view class="info-item">
+      <view class="info-item" wx:if="{{order.distanceText}}">
         <view class="info-label">距离</view>
-        <view class="info-value">{{order.distance}}km</view>
+        <view class="info-value">{{order.distanceText}}</view>
       </view>
     </view>
 

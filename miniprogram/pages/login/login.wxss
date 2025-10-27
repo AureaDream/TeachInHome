@@ -9,11 +9,19 @@
 /* Logo区域 */
 .logo-section {
   text-align: center;
-  margin-bottom: 120rpx;
+  margin-bottom: 350rpx;
 }
 
 .logo {
   margin-bottom: 40rpx;
+}
+
+.logo-img {
+  width: 200rpx;
+  height: auto;
+  border-radius: 8rpx;
+  display: block;
+  margin: 0 auto;
 }
 
 .app-name {
@@ -31,10 +39,13 @@
 /* 登录表单 */
 .login-form {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .wechat-login {
-  margin-bottom: 40rpx;
+  margin: 0;
 }
 
 .divider {

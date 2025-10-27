@@ -122,3 +122,13 @@
 如果遇到问题，请参考相关文档：
 - `docs/database-security-rules-setup.md` - 详细配置指南
 - `docs/openid-field-fix.md` - _openid 字段处理指南
+
+## 通知（notifications）集合权限建议
+- 目的：允许客户端读取自己的通知；写入（标记已读/删除）由云函数执行，避免 -502003。
+- 控制台设置：将 `notifications` 集合设置为“仅创建者可读写”。
+- 字段约定：每条通知包含 `userId`（指向 `users._id`），用于所有权判断。
+- 客户端策略：
+  - 读取：`where({ userId: 当前用户ID })` 正常读取。
+  - 写入：统一改为调用云函数（例如 `deleteNotification`、`markNotificationsRead`）。
+
+> 如果需要允许客户端直接修改为已读，可将权限调为“所有用户可读，创建者可读写”，但推荐继续使用云函数写入以降低误操作风险。

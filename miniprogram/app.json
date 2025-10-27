@@ -79,5 +79,15 @@
     "t-empty": "tdesign-miniprogram/empty/empty"
   },
   "componentFramework": "glass-easel",
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于计算与订单的距离"
+    }
+  },
+  "requiredBackgroundModes": ["location"],
+  "networkTimeout": {
+    "request": 10000,
+    "downloadFile": 10000
+  }
 }

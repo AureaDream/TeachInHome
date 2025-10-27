@@ -169,49 +169,28 @@ Page({
       return;
     }
 
-    const db = wx.cloud.database();
-    const _ = db.command;
-
-    // 批量更新所有未读通知
-    db.collection('notifications')
-      .where({
-        userId: userInfo._id,
-        read: _.eq(false)
-      })
-      .get()
-      .then((res: any) => {
-        if (res.data.length === 0) {
-          console.log('没有未读通知需要更新');
-          return;
-        }
-
-        // 批量更新每个未读通知
-        const updatePromises = res.data.map((notification: any) => {
-          return db.collection('notifications')
-            .doc(notification._id)
-            .update({
-              data: {
-                read: true,
-                readTime: new Date()
-              }
-            });
-        });
-
-        return Promise.all(updatePromises);
-      })
-      .then(() => {
-        console.log('标记通知为已读成功');
+    // 改为调用云函数，避免客户端数据库权限限制
+    wx.cloud.callFunction({
+      name: 'markNotificationsRead'
+    }).then((res: any) => {
+      if (res.result && res.result.success) {
+        console.log('标记通知为已读成功', res.result);
         // 更新本地数据
         const notifications = this.data.notifications.map(n => ({ ...n, read: true }));
         this.setData({ notifications });
-      })
-      .catch((err: any) => {
-        console.error('标记通知为已读失败', err);
+      } else {
         wx.showToast({
-          title: '操作失败，请稍后重试',
+          title: res.result?.message || '操作失败',
           icon: 'error'
         });
+      }
+    }).catch((err: any) => {
+      console.error('标记通知为已读失败', err);
+      wx.showToast({
+        title: '操作失败，请稍后重试',
+        icon: 'error'
       });
+    });
   },
 
   // 格式化时间

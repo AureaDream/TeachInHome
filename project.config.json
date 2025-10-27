@@ -53,5 +53,9 @@
   },
   "appid": "wxadc8ab05511d6029",
   "cloudfunctionRoot": "cloudfunctions/",
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "networkTimeout": {
+    "request": 10000,
+    "downloadFile": 10000
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "markNotificationsRead",
+  "version": "1.0.0",
+  "description": "批量标记消息通知为已读的云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

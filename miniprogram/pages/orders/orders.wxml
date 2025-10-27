@@ -20,6 +20,22 @@
     </t-tabs>
   </view>
 
+  <!-- 定位栏 -->
+  <view class="location-bar">
+    <view class="location-info">
+      <t-icon name="location" size="32rpx" color="{{userLocation ? '#0052d9' : '#999'}}" />
+      <text class="location-text">{{userLocation ? userLocation.address || '已定位' : '点击获取位置'}}</text>
+    </view>
+    <t-button 
+      size="small" 
+      theme="{{userLocation ? 'default' : 'primary'}}"
+      bind:tap="onGetLocation"
+      loading="{{locationLoading}}"
+    >
+      {{locationLoading ? '定位中' : (userLocation ? '重新定位' : '定位')}}
+    </t-button>
+  </view>
+
   <!-- 筛选器 -->
   <view class="filter-bar">
     <view class="filter-item" bind:tap="onShowSubjectFilter">
@@ -87,6 +103,7 @@
           <view class="content-row">
             <t-icon name="location" size="28rpx" color="#666" />
             <text class="content-text">{{item.location}}</text>
+            <text class="distance-text" wx:if="{{item.distanceText}}">{{item.distanceText}}</text>
           </view>
           
           <view class="content-row">
@@ -115,9 +132,8 @@
             <t-button 
               size="small" 
               theme="outline" 
-              bind:tap="onCollectOrder"
+              catch:tap="onCollectOrder"
               data-id="{{item._id}}"
-              catch:tap="true"
             >
               {{item.collected ? '已收藏' : '收藏'}}
             </t-button>
@@ -127,9 +143,8 @@
               wx:if="{{item.status === 'pending'}}"
               size="small" 
               theme="primary" 
-              bind:tap="onTakeOrder"
               data-id="{{item._id}}"
-              catch:tap="true"
+              catch:tap="onTakeOrder"
             >
               立即接单
             </t-button>

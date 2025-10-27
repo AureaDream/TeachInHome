@@ -253,7 +253,7 @@
 /* 表单输入框 */
 .form-input {
   width: 90%;
-  min-height: 60rpx;
+  min-height: 90rpx;
   padding: 24rpx 20rpx;
   background: #f8f8f8;
   border-radius: 8rpx;

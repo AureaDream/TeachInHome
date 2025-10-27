@@ -2,14 +2,8 @@ import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
 
 Page({
   data: {
-    phone: '',
-    code: '',
     wechatLoading: false,
-    phoneLoading: false,
     adminLoading: false,
-    codeDisabled: false,
-    codeText: '获取验证码',
-    countdown: 60,
     showAdminDialog: false,
     adminUsername: '',
     adminPassword: ''
@@ -188,227 +182,15 @@ Page({
     });
   },
 
-  // 手机号输入
-  onPhoneChange(e: any) {
-    this.setData({
-      phone: e.detail.value
-    });
-  },
+  // 手机号登录功能已移除（onPhoneChange）
 
-  // 验证码输入
-  onCodeChange(e: any) {
-    this.setData({
-      code: e.detail.value
-    });
-  },
+  // 手机号登录功能已移除（onCodeChange）
 
-  // 发送验证码
-  onSendCode() {
-    const { phone } = this.data;
-    
-    if (!phone) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入手机号',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请输入正确的手机号',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    // 调用云函数发送验证码
-    wx.cloud.callFunction({
-      name: 'sendSmsCode',
-      data: {
-        phone
-      },
-      success: (res) => {
-        if (!res.result) {
-          console.error('发送验证码云函数返回结果为空');
-          this.setData({ phoneLoading: false });
-          return;
-        }
-        const { success, message } = res.result as { success: boolean, message: string };
-        
-        if (success) {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '验证码已发送',
-            theme: 'success'
-          });
-          
-          // 开始倒计时
-          this.startCountdown();
-        } else {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: message || '发送失败，请稍后重试',
-            theme: 'error'
-          });
-        }
-      },
-      fail: (err) => {
-        console.error('发送验证码失败', err);
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '发送失败，请稍后重试',
-          theme: 'error'
-        });
-      }
-    });
-  },
+  // 手机号登录功能已移除（onSendCode）
 
-  // 倒计时
-  startCountdown() {
-    this.setData({
-      codeDisabled: true,
-      countdown: 60
-    });
-    
-    const timer = setInterval(() => {
-      const { countdown } = this.data;
-      if (countdown <= 1) {
-        clearInterval(timer);
-        this.setData({
-          codeDisabled: false,
-          codeText: '获取验证码'
-        });
-      } else {
-        this.setData({
-          countdown: countdown - 1,
-          codeText: `${countdown - 1}s后重发`
-        });
-      }
-    }, 1000);
-  },
+  // 手机号登录功能已移除（startCountdown）
 
-  // 手机号登录
-  onPhoneLogin() {
-    const { phone, code } = this.data;
-    
-    if (!phone || !code) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请填写完整信息',
-        theme: 'warning'
-      });
-      return;
-    }
-    
-    this.setData({ phoneLoading: true });
-    
-    // 调用云函数验证手机号和验证码
-    wx.cloud.callFunction({
-      name: 'verifyPhoneCode',
-      data: {
-        phone,
-        code
-      },
-      success: (res) => {
-        if (!res.result) {
-          console.error('手机号验证云函数返回结果为空');
-          this.setData({ phoneLoading: false });
-          return;
-        }
-        const { success, message, openid } = res.result as { success: boolean, message: string, openid: string };
-        
-        if (success) {
-          // 验证成功，查询用户信息
-          const db = wx.cloud.database();
-          db.collection('users').where({
-            _openid: openid
-          }).get().then(userRes => {
-            if (userRes.data.length > 0) {
-              // 用户已存在，更新信息
-              const dbUserInfo = userRes.data[0];
-              // 添加类型断言，确保 userId 是 string 类型
-              const userId = dbUserInfo._id as string;
-              
-              // 更新手机号和登录时间
-              db.collection('users').doc(userId).update({
-                data: {
-                  phone: phone,
-                  lastLoginTime: new Date()
-                }
-              }).then(() => {
-                // 更新本地存储
-                const updatedUserInfo = {
-                  ...dbUserInfo,
-                  phone: phone,
-                  lastLoginTime: new Date()
-                };
-                wx.setStorageSync('userInfo', updatedUserInfo);
-                this.loginSuccess();
-              }).catch(err => {
-                console.error('更新用户信息失败', err);
-                this.loginFail();
-              });
-            } else {
-              // 新用户，创建记录
-              const newUser: any = {
-                nickName: phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2'),
-                avatarUrl: '',
-                phone: phone,
-                loginType: 'phone',
-                isAuthenticated: false,
-                createTime: new Date(),
-                lastLoginTime: new Date(),
-                email: '',
-                bio: '',
-                role: 'user',
-                status: 'active'
-              };
-              
-              db.collection('users').add({
-                data: newUser
-              }).then(res => {
-                // 添加ID并保存到本地
-                newUser._id = res._id;
-                // _openid 由云数据库自动添加，不需要手动设置
-                wx.setStorageSync('userInfo', newUser);
-                this.loginSuccess();
-              }).catch(err => {
-                console.error('创建用户失败', err);
-                this.loginFail();
-              });
-            }
-          }).catch(err => {
-            console.error('查询用户失败', err);
-            this.loginFail();
-          });
-        } else {
-          // 验证失败
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: message || '验证码错误',
-            theme: 'error'
-          });
-        }
-      },
-      fail: (err) => {
-        console.error('云函数调用失败', err);
-        this.loginFail();
-      },
-      complete: () => {
-        this.setData({ phoneLoading: false });
-      }
-    });
-  },
+  // 手机号登录功能已移除（onPhoneLogin）
 
   // 显示用户协议
   onShowAgreement() {

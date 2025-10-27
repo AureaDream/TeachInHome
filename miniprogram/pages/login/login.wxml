@@ -1,15 +1,15 @@
 <view class="login-container">
-  <!-- 顶部Logo区域 -->
-  <view class="logo-section">
-    <view class="logo">
-      <t-icon name="education" size="80rpx" color="#0052d9" />
-    </view>
-    <view class="app-name">家教接单平台</view>
-    <view class="app-desc">专业家教，值得信赖</view>
-  </view>
-
-  <!-- 登录表单区域 -->
+  <!-- 登录表单区域（居中） -->
   <view class="login-form">
+    <!-- Logo与标题（调整至按钮上方） -->
+    <view class="logo-section">
+      <view class="logo">
+        <image src="../../images/logo.jpg" class="logo-img" mode="widthFix" style="width:200rpx;border-radius:8rpx;display:block;margin:0 auto" />
+      </view>
+      <view class="app-name">家里教接单平台</view>
+      <view class="app-desc">专业家教，值得信赖</view>
+    </view>
+
     <!-- 微信一键登录 -->
     <view class="wechat-login">
       <t-button 
@@ -22,60 +22,6 @@
       >
         微信一键登录
       </t-button>
-    </view>
-
-    <!-- 分割线 -->
-    <view class="divider">
-      <t-divider>或</t-divider>
-    </view>
-
-    <!-- 手机号登录 -->
-    <view class="phone-login">
-      <view class="input-group">
-        <t-input
-          placeholder="请输入手机号"
-          type="number"
-          maxlength="11"
-          value="{{phone}}"
-          bind:change="onPhoneChange"
-          prefix-icon="mobile"
-        />
-      </view>
-      
-      <view class="input-group">
-        <t-input
-          placeholder="请输入验证码"
-          type="number"
-          maxlength="6"
-          value="{{code}}"
-          bind:change="onCodeChange"
-          prefix-icon="secured"
-        >
-          <view slot="suffix">
-            <t-button
-              theme="outline"
-              size="small"
-              bind:tap="onSendCode"
-              disabled="{{codeDisabled}}"
-            >
-              {{codeText}}
-            </t-button>
-          </view>
-        </t-input>
-      </view>
-
-      <view class="login-btn">
-        <t-button 
-          theme="primary" 
-          size="large" 
-          block
-          bind:tap="onPhoneLogin"
-          loading="{{phoneLoading}}"
-          disabled="{{!phone || !code}}"
-        >
-          登录
-        </t-button>
-      </view>
     </view>
   </view>
 

@@ -1,4 +1,5 @@
 import Toast from '../../miniprogram_npm/tdesign-miniprogram/toast/index';
+import AmapUtil from '../../utils/amap';
 
 interface Order {
   [x: string]: any;
@@ -33,6 +34,10 @@ Page({
     hasMore: true,
     page: 1,
     orders: [] as Order[],
+    
+    // 定位相关
+    userLocation: null as any,
+    locationLoading: false,
     
     // 筛选相关
     selectedSubject: '',
@@ -163,6 +168,18 @@ Page({
       selectedDistance: this.data.tempDistance,
       showDistanceDialog: false
     });
+    
+    // 如果选择了距离筛选但没有定位，提示用户先定位
+    if (this.data.tempDistance && this.data.tempDistance !== '不限' && !this.data.userLocation) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请先获取位置信息',
+        theme: 'warning'
+      });
+      return;
+    }
+    
     this.refreshOrders();
   },
 
@@ -199,6 +216,43 @@ Page({
       selectedSalary: ''
     });
     this.refreshOrders();
+  },
+
+  // 定位功能
+  async onGetLocation() {
+    if (this.data.locationLoading) return;
+    
+    this.setData({ locationLoading: true });
+    
+    try {
+      const amapUtil = AmapUtil.getInstance();
+      const location = await amapUtil.getCurrentLocation();
+      
+      this.setData({ 
+        userLocation: location,
+        locationLoading: false 
+      });
+      
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '定位成功',
+        theme: 'success'
+      });
+      
+      // 如果已选择距离筛选，重新加载订单
+      if (this.data.selectedDistance && this.data.selectedDistance !== '不限') {
+        this.refreshOrders();
+      }
+    } catch (error: any) {
+      this.setData({ locationLoading: false });
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: error.message || '定位失败',
+        theme: 'error'
+      });
+    }
   },
 
   // 订单操作
@@ -392,8 +446,24 @@ Page({
         } as Order;
       });
 
+      // 应用距离筛选
+      let filteredOrders = orders;
+      if (this.data.selectedDistance && this.data.selectedDistance !== '不限' && this.data.userLocation) {
+        try {
+          const amapUtil = AmapUtil.getInstance();
+          filteredOrders = await amapUtil.filterOrdersByDistance(
+            orders,
+            this.data.userLocation,
+            this.data.selectedDistance
+          );
+        } catch (error) {
+          console.warn('距离筛选失败:', error);
+          // 筛选失败时使用原始订单列表
+        }
+      }
+
       this.setData({
-        orders: this.data.page === 1 ? orders : [...this.data.orders, ...orders],
+        orders: this.data.page === 1 ? filteredOrders : [...this.data.orders, ...filteredOrders],
         loading: false,
         hasMore: orders.length === pageSize
       });
