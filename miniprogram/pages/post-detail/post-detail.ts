@@ -78,10 +78,40 @@ Page({
     return fallback;
   },
 
+  // 解析图片URL：支持云存储 fileID、http(s) 链接，并检测损坏图片
+  async resolveImageUrl(raw?: string): Promise<string> {
+    const fallback = '/images/image-placeholder.svg';
+    if (!raw || typeof raw !== 'string' || raw.trim() === '') return fallback;
+    const val = raw.trim();
+    // 已是 http(s) 或本地路径
+    if (/^https?:\/\//.test(val) || val.startsWith('/')) return val;
+    // 云存储 fileID -> 临时可访问链接
+    if (val.startsWith('cloud://')) {
+      try {
+        const result = await wx.cloud.getTempFileURL({ fileList: [val] });
+        const info = result && result.fileList && result.fileList[0];
+        if (info && info.status === 0 && info.tempFileURL) return info.tempFileURL;
+      } catch (e) {
+        console.error('获取图片临时URL失败:', e);
+      }
+      return fallback;
+    }
+    // 其他不识别的格式，使用占位图
+    return fallback;
+  },
+
   async preparePostAvatar(post: any): Promise<any> {
     if (!post || !post.author) return post;
     const raw = post.author.avatar || post.author.avatarUrl || '';
     post.author.avatar = await this.resolveAvatarUrl(raw);
+    
+    // 处理帖子图片
+    if (post.images && Array.isArray(post.images)) {
+      post.images = await Promise.all(post.images.map(async (img: string) => {
+        return await this.resolveImageUrl(img);
+      }));
+    }
+    
     return post;
   },
 
@@ -475,11 +505,25 @@ Page({
   // 图片预览
   onImageTap(e: any) {
     const { images, current } = e.currentTarget.dataset;
-    
     wx.previewImage({
-      urls: images,
-      current: current
+      current: current,
+      urls: images
     });
+  },
+
+  // 图片加载错误处理
+  onImageError(e: any) {
+    const { index } = e.currentTarget.dataset;
+    console.warn('图片加载失败:', e.detail);
+    
+    // 更新帖子图片为占位符
+    if (this.data.post && this.data.post.images && this.data.post.images[index]) {
+      const newImages = [...this.data.post.images];
+      newImages[index] = '/images/image-placeholder.svg';
+      this.setData({
+        'post.images': newImages
+      });
+    }
   },
 
   // 分享帖子

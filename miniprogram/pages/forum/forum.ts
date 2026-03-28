@@ -61,6 +61,117 @@ Page({
     ]
   },
 
+  // 解析头像URL：支持云存储 fileID、http(s) 链接、或本地默认头像
+  async resolveAvatarUrl(raw?: string): Promise<string> {
+    console.log('resolveAvatarUrl 输入:', raw);
+    
+    const fallback = '/images/avatar-default.svg';
+    if (!raw || typeof raw !== 'string' || raw.trim() === '') {
+      console.log('头像为空，使用默认头像');
+      return fallback;
+    }
+    const val = raw.trim();
+    // 已是 http(s) 或本地路径
+    if (/^https?:\/\//.test(val) || val.startsWith('/')) {
+      console.log('头像是HTTP链接或本地路径，直接返回:', val);
+      return val;
+    }
+    // 云存储 fileID -> 临时可访问链接
+    if (val.startsWith('cloud://')) {
+      try {
+        console.log('尝试获取云存储临时链接:', val);
+        const result = await wx.cloud.getTempFileURL({ fileList: [val] });
+        const info = result && result.fileList && result.fileList[0];
+        if (info && info.status === 0 && info.tempFileURL) {
+          console.log('云存储临时链接获取成功:', info.tempFileURL);
+          return info.tempFileURL;
+        }
+      } catch (e) {
+        console.error('获取头像临时URL失败:', e);
+      }
+      console.log('云存储临时链接获取失败，使用默认头像');
+      return fallback;
+    }
+    // 其他不识别的格式，使用默认头像
+    console.log('头像格式不识别，使用默认头像');
+    return fallback;
+  },
+
+  // 解析图片URL：支持云存储 fileID、http(s) 链接，并检测损坏图片
+  async resolveImageUrl(raw?: string): Promise<string> {
+    const fallback = '/images/image-placeholder.svg';
+    if (!raw || typeof raw !== 'string' || raw.trim() === '') return fallback;
+    const val = raw.trim();
+    // 已是 http(s) 或本地路径
+    if (/^https?:\/\//.test(val) || val.startsWith('/')) return val;
+    // 云存储 fileID -> 临时可访问链接
+    if (val.startsWith('cloud://')) {
+      try {
+        const result = await wx.cloud.getTempFileURL({ fileList: [val] });
+        const info = result && result.fileList && result.fileList[0];
+        if (info && info.status === 0 && info.tempFileURL) return info.tempFileURL;
+      } catch (e) {
+        console.error('获取图片临时URL失败:', e);
+      }
+      return fallback;
+    }
+    // 其他不识别的格式，使用占位图
+    return fallback;
+  },
+
+  async preparePostsAvatars(posts: any[]): Promise<any[]> {
+    try {
+      console.log('=== 开始处理帖子头像 ===');
+      console.log('原始帖子数据:', posts.map(p => ({
+        id: p.id,
+        title: p.title,
+        authorName: p.author?.name,
+        originalAvatar: p.author?.avatar
+      })));
+      
+      const processedPosts = await Promise.all(posts.map(async (post) => {
+        const processedPost = { ...post };
+        
+        // 处理作者头像
+        if (processedPost.author && processedPost.author.avatar) {
+          const originalAvatar = processedPost.author.avatar;
+          console.log(`处理帖子 ${post.id} 的头像:`, originalAvatar);
+          
+          processedPost.author.avatar = await this.resolveAvatarUrl(processedPost.author.avatar);
+          
+          console.log(`头像处理结果:`, {
+            原始: originalAvatar,
+            处理后: processedPost.author.avatar
+          });
+        } else {
+          console.log(`帖子 ${post.id} 没有头像数据`);
+        }
+        
+        // 处理帖子图片
+        if (processedPost.images && processedPost.images.length > 0) {
+          processedPost.images = await Promise.all(
+            processedPost.images.map((img: string) => this.resolveImageUrl(img))
+          );
+        }
+        
+        return processedPost;
+      }));
+      
+      console.log('=== 头像处理完成 ===');
+      console.log('处理后的帖子数据:', processedPosts.map(p => ({
+        id: p.id,
+        title: p.title,
+        authorName: p.author?.name,
+        processedAvatar: p.author?.avatar
+      })));
+      
+      return processedPosts;
+    } catch (error) {
+      console.error('处理头像失败:', error);
+      return posts; // 返回原始数据作为后备
+    }
+  },
+
   onLoad() {
     this.checkLoginStatus();
     this.loadPosts();
@@ -175,20 +286,39 @@ Page({
         if (res.result && typeof res.result === 'object' && (res.result as any).success) {
           const { posts, hasMore } = (res.result as any).data;
           
-          if (reset) {
-            this.setData({
-              posts: posts,
-              loading: false,
-              refreshing: false,
-              hasMore: hasMore
-            });
-          } else {
-            this.setData({
-              posts: [...this.data.posts, ...posts],
-              loadingMore: false,
-              hasMore: hasMore
-            });
-          }
+          // 处理头像URL
+          this.preparePostsAvatars(posts).then((processedPosts) => {
+            if (reset) {
+              this.setData({
+                posts: processedPosts,
+                loading: false,
+                refreshing: false,
+                hasMore: hasMore
+              });
+            } else {
+              this.setData({
+                posts: [...this.data.posts, ...processedPosts],
+                loadingMore: false,
+                hasMore: hasMore
+              });
+            }
+          }).catch(() => {
+            // 如果头像处理失败，使用原始数据
+            if (reset) {
+              this.setData({
+                posts: posts,
+                loading: false,
+                refreshing: false,
+                hasMore: hasMore
+              });
+            } else {
+              this.setData({
+                posts: [...this.data.posts, ...posts],
+                loadingMore: false,
+                hasMore: hasMore
+              });
+            }
+          });
         } else {
           Toast({
             context: this,
@@ -332,6 +462,47 @@ Page({
       urls: images,
       current: current
     });
+  },
+
+  // 头像加载错误处理
+  onAvatarError(e: any) {
+    const postId = e.currentTarget.dataset.postId;
+    console.log('头像加载失败，帖子ID:', postId);
+    
+    // 更新对应帖子的头像为默认头像
+    const posts = this.data.posts;
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          author: {
+            ...post.author,
+            avatar: '/images/avatar-default.svg'
+          }
+        };
+      }
+      return post;
+    });
+    
+    this.setData({ posts: updatedPosts });
+  },
+
+  // 图片加载错误处理
+  onImageError(e: any) {
+    const { index, postId } = e.currentTarget.dataset;
+    console.warn('图片加载失败:', e.detail);
+    
+    // 更新对应帖子的图片为占位符
+    const posts = this.data.posts.map(post => {
+      if (post.id === postId && post.images && post.images[index]) {
+        const newImages = [...post.images];
+        newImages[index] = '/images/image-placeholder.svg';
+        return { ...post, images: newImages };
+      }
+      return post;
+    });
+    
+    this.setData({ posts });
   },
 
   // 发帖相关

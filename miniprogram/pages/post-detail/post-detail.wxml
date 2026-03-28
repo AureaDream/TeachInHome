@@ -38,7 +38,12 @@
         data-images="{{post.images}}"
         data-current="{{item}}"
       >
-        <image src="{{item}}" mode="aspectFill" />
+        <image 
+          src="{{item}}" 
+          mode="aspectFill" 
+          binderror="onImageError"
+          data-index="{{index}}"
+        />
       </view>
     </view>
     

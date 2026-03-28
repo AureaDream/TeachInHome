@@ -62,7 +62,13 @@
         <!-- 帖子头部 -->
         <view class="post-header">
           <view class="user-info">
-            <image class="avatar" src="{{item.author.avatar}}" mode="aspectFill" />
+            <image 
+              class="avatar" 
+              src="{{item.author.avatar || '/images/avatar-default.svg'}}" 
+              mode="aspectFill" 
+              binderror="onAvatarError"
+              data-post-id="{{item.id}}"
+            />
             <view class="user-details">
               <text class="username">{{item.author.name}}</text>
               <text class="post-time">{{item.createTime}}</text>
@@ -95,6 +101,9 @@
               bind:tap="onImageTap"
               data-images="{{item.images}}"
               data-current="{{img}}"
+              binderror="onImageError"
+              data-index="{{index}}"
+              data-post-id="{{item.id}}"
             />
           </view>
         </view>

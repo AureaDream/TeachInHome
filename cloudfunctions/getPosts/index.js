@@ -115,6 +115,7 @@ exports.main = async (event, context) => {
         ID: posts[0].id,
         标题: posts[0].title,
         作者: posts[0].author.name,
+        作者头像: posts[0].author.avatar,
         点赞数: posts[0].likeCount,
         是否点赞: posts[0].isLiked
       } : '无帖子'
